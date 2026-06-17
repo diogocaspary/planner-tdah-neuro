@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0b1120">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Planner TDAH">
+<link rel="manifest" href="manifest.json">
+<title>Planner TDAH · Neuro</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{overflow-x:hidden;width:100%;-webkit-overflow-scrolling:touch}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,Roboto,sans-serif;
+  background:#0b1120;color:#e2e8f0;max-width:480px;margin:0 auto;
+  min-height:100vh;min-height:100dvh;padding:20px 16px 100px;
+  -webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.5;position:relative;
+}
+h1{font-size:24px;font-weight:800;color:#93c5fd;text-align:center;margin-bottom:8px}
+h2{font-size:18px;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.sub{color:#94a3b8;text-align:center;font-size:14px;line-height:1.6;margin-bottom:20px}
+.sub b{color:#e2e8f0}
+#ativacao{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;gap:16px}
+#ativacao input{width:100%;padding:18px;background:#1e293b;border:2px solid #334155;border-radius:16px;color:#e2e8f0;font-size:22px;text-align:center;letter-spacing:3px;outline:none;font-weight:700}
+#ativacao input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(96,165,250,.2)}
+#ativacao button,.btn{width:100%;padding:18px;background:#2563eb;color:#fff;border:none;border-radius:16px;font-size:18px;font-weight:700;cursor:pointer}
+#ativacao button:active,.btn:active{opacity:.85;transform:scale(.98)}
+.err{color:#fca5a5;text-align:center;font-size:14px;margin-top:8px;font-weight:600}
+.versao{font-size:11px;color:#475569;margin-top:8px}
+#onboarding{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:1000;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+.onb-card{background:#1e293b;border:1px solid #334155;border-radius:24px;padding:32px 24px;max-width:380px;width:100%;text-align:center}
+.onb-card .emoji{font-size:64px;margin-bottom:16px}
+.onb-card .ciencia{font-size:11px;color:#60a5fa;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.onb-card h2{font-size:20px;color:#93c5fd;margin-bottom:8px}
+.onb-card p{color:#94a3b8;font-size:14px;line-height:1.7;margin-bottom:20px}
+.onb-dots{display:flex;justify-content:center;gap:8px;margin-bottom:20px}
+.onb-dot{width:8px;height:8px;border-radius:4px;background:#334155;transition:all .3s}
+.onb-dot.ativo{background:#60a5fa;width:28px}
+.onb-btns{display:flex;gap:12px}
+.onb-btns button{flex:1;padding:14px;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;border:none}
+.onb-pular{background:transparent;color:#94a3b8}
+.onb-prox{background:#2563eb;color:#fff}
+#app{display:none}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 0 12px;border-bottom:1px solid #1e293b;margin-bottom:12px}
+header h1{font-size:18px;margin:0}
+.badge{background:#1e293b;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#94a3b8;border:1px solid #334155}
+.timer-section{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:24px;text-align:center;margin-bottom:12px}
+.timer-circle{width:140px;height:140px;border-radius:50%;margin:0 auto 16px;position:relative;display:flex;align-items:center;justify-content:center}
+.timer-circle svg{position:absolute;top:0;left:0;width:100%;height:100%;transform:rotate(-90deg)}
+.timer-circle .bg{fill:none;stroke:#1e293b;stroke-width:8}
+.timer-circle .fg{fill:none;stroke:#60a5fa;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .3s}
+.timer-time{font-size:36px;font-weight:800;color:#e2e8f0;z-index:1}
+.timer-label{font-size:14px;color:#94a3b8;margin-bottom:16px}
+.timer-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.timer-btns button{padding:10px 14px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid #334155;background:#0b1120;color:#e2e8f0;flex-shrink:0}
+.timer-btns button.ativo{background:#2563eb;border-color:#2563eb;color:#fff}
+.timer-btns button.run{background:#16a34a;border-color:#16a34a;color:#fff;font-size:16px;padding:10px 24px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:18px;padding:18px;margin-bottom:12px}
+.card h3{font-size:16px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;color:#e2e8f0}
+.card .help{font-size:13px;color:#94a3b8;margin-bottom:12px;line-height:1.6}
+.card .help b{color:#e2e8f0}
+.card .counter{position:absolute;top:14px;right:16px;font-size:12px;font-weight:700;color:#94a3b8}
+.prio-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #1e293b}
+.prio-item:last-child{border-bottom:none}
+.prio-item input[type="text"]{flex:1;background:transparent;border:none;color:#e2e8f0;font-size:15px;outline:none;font-family:inherit}
+.prio-item input[type="text"]::placeholder{color:#475569;font-size:14px}
+.prio-check{appearance:none;width:28px;height:28px;border:2px solid #334155;border-radius:8px;cursor:pointer;flex-shrink:0;background:#0b1120}
+.prio-check:checked{background:#4ade80;border-color:#4ade80}
+.prio-check:checked::after{content:'✓';display:block;text-align:center;color:#0b1120;font-size:16px;font-weight:bold;line-height:24px}
+.prio-item.feito input[type="text"]{text-decoration:line-through;color:#64748b}
+.btn-5min{width:100%;padding:16px;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;border:none;border-radius:14px;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-5min:active{opacity:.85}
+.brain-input{width:100%;background:#0b1120;border:1px solid #334155;border-radius:12px;padding:12px;color:#e2e8f0;font-size:14px;min-height:56px;outline:none;resize:vertical;font-family:inherit}
+.brain-input::placeholder{color:#475569;font-size:13px}
+.brain-input:focus{border-color:#a78bfa}
+.meter-row{display:flex;gap:8px;justify-content:space-between}
+.meter-col{flex:1;text-align:center}
+.meter-col label{font-size:11px;font-weight:600;color:#94a3b8;display:block;margin-bottom:6px}
+.meter-btns{display:flex;justify-content:center;gap:3px}
+.meter-btn{width:30px;height:30px;border-radius:15px;border:1.5px solid #334155;background:#0b1120;color:#94a3b8;font-size:12px;cursor:pointer;font-weight:700}
+.meter-btn.sel{background:#a78bfa;border-color:#a78bfa;color:#fff}
+.stop-card{background:#1e293b;border:1px solid #f59e0b;border-radius:18px;padding:18px;margin-bottom:12px}
+.stop-card h3{color:#fbbf24}
+.conq-item{display:flex;align-items:center;gap:12px;padding:8px 0;cursor:pointer}
+.conq-item input[type="text"]{flex:1;background:transparent;border:none;color:#e2e8f0;font-size:15px;outline:none;font-family:inherit}
+.conq-item input[type="text"]::placeholder{color:#475569;font-size:13px}
+.conq-dot{width:14px;height:14px;border-radius:7px;border:2px solid #334155;background:#0b1120;flex-shrink:0}
+.conq-item.feito .conq-dot{background:#4ade80;border-color:#4ade80}
+.conq-item.feito input[type="text"]{text-decoration:line-through;color:#64748b}
+.rotina-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #1e293b}
+.rotina-item:last-child{border-bottom:none}
+.rotina-check{appearance:none;width:24px;height:24px;border:2px solid #334155;border-radius:6px;cursor:pointer;flex-shrink:0;background:#0b1120}
+.rotina-check:checked{background:#4ade80;border-color:#4ade80}
+.rotina-check:checked::after{content:'✓';display:block;text-align:center;color:#0b1120;font-size:14px;font-weight:bold;line-height:20px}
+.rotina-item span{flex:1;font-size:14px;color:#e2e8f0}
+.rotina-item.feito span{text-decoration:line-through;color:#64748b}
+.progresso{display:flex;gap:12px;margin-bottom:12px}
+.progresso .box{flex:1;background:#1e293b;border:1px solid #334155;border-radius:14px;padding:14px;text-align:center}
+.progresso .box .num{font-size:28px;font-weight:800;color:#93c5fd}
+.progresso .box .lbl{font-size:11px;color:#94a3b8;margin-top:2px}
+.bottom-bar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#0b1120;padding:12px 16px;border-top:1px solid #1e293b;display:flex;gap:8px;z-index:100}
+.bottom-bar button{flex:1;padding:14px;border-radius:14px;font-size:13px;font-weight:700;cursor:pointer;border:none}
+.btn-modo{background:#1e293b;color:#94a3b8;border:1px solid #334155}
+.btn-salvar{background:#2563eb;color:#fff}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4ade80;color:#0b1120;padding:12px 24px;border-radius:24px;font-size:14px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.confete{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:64px;z-index:998;animation:pop .6s ease-out forwards;pointer-events:none}
+@keyframes pop{0%{transform:translate(-50%,-50%) scale(0)}50%{transform:translate(-50%,-50%) scale(1.3)}100%{transform:translate(-50%,-50%) scale(0);opacity:0}}
+nav{display:flex;gap:4px;overflow-x:auto;padding:8px 0;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+nav::-webkit-scrollbar{display:none}
+nav button{flex-shrink:0;width:34px;height:34px;border-radius:17px;border:1.5px solid #334155;background:#1e293b;color:#94a3b8;font-size:12px;font-weight:700;cursor:pointer}
+nav button.ativo{background:#2563eb;border-color:#2563eb;color:#fff}
+nav button.feito{border-color:#4ade80}
+.review-input{width:100%;background:#0b1120;border:1px solid #334155;border-radius:12px;padding:12px;color:#e2e8f0;font-size:14px;min-height:50px;outline:none;resize:vertical;font-family:inherit;margin-bottom:8px}
+.review-input::placeholder{color:#475569;font-size:13px}
+.review-input:focus{border-color:#60a5fa}
+.dica-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin-bottom:10px}
+.dica-card h4{font-size:15px;font-weight:700;color:#93c5fd;margin-bottom:6px}
+.dica-card p{font-size:13px;color:#94a3b8;line-height:1.7;margin-bottom:6px}
+.dica-card .fonte{font-size:11px;color:#60a5fa;font-style:italic}
+.disclaimer{background:#7f1d1d;border:1px solid #dc2626;border-radius:14px;padding:14px;margin-bottom:16px;text-align:center}
+.disclaimer p{font-size:12px;color:#fca5a5;line-height:1.6;font-weight:600}
+.dica-nav{display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin-bottom:12px;scrollbar-width:none}
+.dica-nav::-webkit-scrollbar{display:none}
+.dica-nav button{flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.dica-nav button.sel{background:#2563eb;border-color:#2563eb;color:#fff}
+.install-banner{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);width:calc(100% - 32px);max-width:448px;background:#1e293b;border:2px solid #60a5fa;border-radius:18px;padding:16px;z-index:950;box-shadow:0 8px 32px rgba(0,0,0,.6);flex-direction:column;gap:12px}
+.install-banner .ib-top{display:flex;align-items:center;gap:12px}
+.install-banner .ib-icon{font-size:40px}
+.install-banner .ib-text{flex:1}
+.install-banner .ib-text strong{color:#93c5fd;font-size:15px}
+.install-banner .ib-text span{color:#94a3b8;font-size:13px;display:block;margin-top:2px}
+.install-banner .ib-btns{display:flex;gap:8px}
+.install-banner .ib-btns button{flex:1;padding:12px;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;border:none}
+.ib-instalar{background:#2563eb;color:#fff}
+.ib-fechar{background:transparent;color:#94a3b8}
+.ctx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:20px 0}
+.ctx-card{background:#1e293b;border:2px solid #334155;border-radius:16px;padding:18px 12px;text-align:center;cursor:pointer;transition:all .2s}
+.ctx-card:active{transform:scale(.96)}
+.ctx-card .ctx-icon{font-size:36px;margin-bottom:8px}
+.ctx-card .ctx-nome{font-size:14px;font-weight:700;color:#e2e8f0}
+.ctx-card .ctx-sub{font-size:11px;color:#64748b;margin-top:2px}
+.ctx-card.sel{border-color:#60a5fa;background:#1e3a5f}
+.anal-card{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:16px;margin-bottom:10px}
+.anal-bar{height:8px;background:#334155;border-radius:4px;margin:6px 0;overflow:hidden}
+.anal-fill{height:100%;border-radius:4px;transition:width .5s}
+.anal-label{display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px}
+.anal-label span:first-child{color:#e2e8f0}
+.anal-label span:last-child{color:#94a3b8;font-weight:700}
+.insight-box{background:#1e3a5f;border:1px solid #60a5fa;border-radius:12px;padding:14px;margin-bottom:12px}
+.insight-box p{font-size:13px;color:#93c5fd;line-height:1.6}
+.ctx-header{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#1e293b;border:1px solid #334155;border-radius:20px;font-size:12px;color:#94a3b8;margin-bottom:12px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="ativacao">
+  <h1>🧠 Planner TDAH</h1>
+  <p class="sub">Baseado em <b>80+ estudos científicos</b>.<br>Ferramentas que funcionam para o <b>seu cérebro</b>.</p>
+  <input type="text" id="code" placeholder="Digite seu código" autocomplete="off" inputmode="text">
+  <button onclick="ativar()">Começar Agora</button>
+  <div class="err" id="err"></div>
+  <div class="versao">v3.0 · Contextos · Analytics · CBT/DBT · STOP · Dicas</div>
+</div>
+
+<div id="onboarding">
+  <div class="onb-card" id="onbCard"></div>
+</div>
+
+<div id="app">
+  <header>
+    <h1 id="ctxTitle">🧠 Meu Planner</h1>
+    <div class="badge" id="dayBadge">Dia 1</div>
+  </header>
+  <div class="ctx-header" onclick="mostrarContexto()"><span id="ctxBadge">🌟 Vida</span> · Toque para mudar</div>
+  <div class="progresso">
+    <div class="box"><div class="num" id="streak">0</div><div class="lbl">dias seguidos</div></div>
+    <div class="box"><div class="num" id="pct">0%</div><div class="lbl">do mês</div></div>
+    <div class="box"><div class="num" id="totalFeito">0</div><div class="lbl">tarefas ✓</div></div>
+  </div>
+  <nav id="dayNav"></nav>
+  <div class="timer-section">
+    <div class="timer-circle">
+      <svg viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="62"/><circle class="fg" id="timerFg" cx="70" cy="70" r="62" stroke-dasharray="389.56" stroke-dashoffset="0"/></svg>
+      <div class="timer-time" id="timerDisplay">10:00</div>
+    </div>
+    <div class="timer-label" id="timerLabel">Timer Pomodoro ADHD (10 min)</div>
+    <div class="timer-btns">
+      <button onclick="setTimer(5)">5 min</button>
+      <button onclick="setTimer(10)">10 min</button>
+      <button onclick="setTimer(15)">15 min</button>
+      <button onclick="setTimer(25)">25 min</button>
+    </div>
+    <div class="timer-btns" style="margin-top:8px">
+      <button class="run" id="btnTimer" onclick="toggleTimer()">▶ Iniciar</button>
+    </div>
+  </div>
+  <div id="content"></div>
+  <div class="bottom-bar">
+    <button class="btn-modo" onclick="mostrarModo()">⚡ Modo</button>
+    <button class="btn-modo" onclick="mostrarRotina()">🌅 Rotina</button>
+    <button class="btn-modo" onclick="mostrarDicas()">🧠 Dicas</button>
+    <button class="btn-modo" onclick="mostrarAnalytics()">📊 Stats</button>
+    <button class="btn-salvar" onclick="goNextDay()">▶</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">💾 Salvo!</div>
+<div class="install-banner" id="installBanner">
+  <div class="ib-top">
+    <div class="ib-icon">🧠</div>
+    <div class="ib-text"><strong>Instale o Planner TDAH</strong><span>Use como app no seu celular. Sem abrir o navegador.</span></div>
+  </div>
+  <div class="ib-btns">
+    <button class="ib-fechar" onclick="fecharInstall()">Depois</button>
+    <button class="ib-instalar" id="btnInstall" onclick="instalarApp()">Instalar Agora</button>
+  </div>
+</div>
+
+<script>
+var CODIGOS=['TDAH2026','PLANNER30','FOCO2026','MENTE2026','ATIVA123'];
+var DIA=parseInt(localStorage.getItem('tdah_dia')||'1');
+var DADOS=JSON.parse(localStorage.getItem('tdah_dados')||'{}');
+var TIMER_INTERVALO=null;
+var TIMER_SEGUNDOS=0;
+var TIMER_TOTAL=600;
+
+// ═══ CONTEXTO ═══
+var CTX={
+  estudos:{nome:'📚 Estudos',timer:25,prio:['1. Matéria/Conteúdo','2. Exercícios/Revisão','3. Pesquisa/Leitura'],foco:'Qual matéria ou prova é prioridade hoje?',micro:['Abrir o material. Só isso.','Fazer 1 exercício. Só 1.','Relê-lo 1 página do resumo.'],manha:['🪥 Escovar os dentes','💧 Beber água','📝 Ver matérias do dia','📖 10 min de leitura','🍳 Café com proteína'],noite:['📱 Guardar celular','🪥 Escovar os dentes','📝 Revisar o que aprendeu','🎯 Planejar matérias amanhã','😴 Apagar luzes 22h'],dica:'Estudos consistentes > maratonas. Sessões curtas com pausas.'},
+  trabalho:{nome:'💼 Trabalho',timer:15,prio:['1. Projeto/Entrega','2. E-mails/Reuniões','3. Organização'],foco:'Qual entrega ou reunião é a mais crítica?',micro:['Abrir o documento. Só isso.','Responder 1 e-mail travado.','Listar pendências em 2 min.'],manha:['🪥 Escovar os dentes','💧 Beber água','📝 Revisar agenda','🚶 5 min de caminhada','🍳 Café da manhã'],noite:['📱 Desligar notificações','🪥 Escovar os dentes','📝 Anotar pendências p/ amanhã','🧘 2 min de respiração','😴 Dormir até 23h'],dica:'Reuniões drenam o TDAH. Bloqueie 30 min entre cada.'},
+  esporte:{nome:'🏃 Esporte',timer:20,prio:['1. Treino principal','2. Alimentação/Hidratação','3. Descanso/Recuperação'],foco:'Qual treino ou meta física é prioridade?',micro:['Alongar 2 min. Só isso.','Preparar a roupa de treino.','Beber 1 copo de água agora.'],manha:['💧 500ml água ao acordar','🧘 5 min alongamento','🍳 Café com proteína','🏃 Treino ou aquecimento','📝 Registrar como se sente'],noite:['🍗 Jantar com proteína','🪥 Higiene bucal','🧊 Alongamento leve','📝 Diário de treino','😴 Dormir cedo p/ recuperação'],dica:'Consistência > intensidade. 1 treino curto bem feito > 0 longos.'},
+  curso:{nome:'🎓 Curso',timer:25,prio:['1. Aula/Módulo do dia','2. Atividade/Projeto','3. Networking'],foco:'Qual módulo ou entrega do curso é prioridade?',micro:['Abrir a plataforma. Só isso.','Assistir 5 min da aula.','Escrever 1 frase sobre o tema.'],manha:['🪥 Escovar os dentes','💧 Beber água','📝 Ver tarefas do curso','🎧 Ouvir resumo da aula anterior','🍳 Café da manhã'],noite:['📱 Guardar celular','🪥 Escovar os dentes','📝 O que aprendi hoje?','🔗 Conectar com colegas','😴 Dormir até 23h'],dica:'Aulas em 1.25x-1.5x. Anotações à mão ativam mais o cérebro TDAH.'},
+  geral:{nome:'🌟 Vida',timer:10,prio:['1. Mais importante hoje','2. Segundo mais importante','3. Se der tempo'],foco:'O que REALMENTE importa hoje?',micro:['Abrir o documento. Só isso.','Dar o primeiro passo.','Fazer por 5 minutos.'],manha:['🪥 Escovar os dentes','💧 Beber água','🧘 1 min de alongamento','📝 Ver prioridades do dia','🍳 Café da manhã'],noite:['📱 Guardar celular','🪥 Escovar os dentes','📝 Anotar 1 conquista','📖 5 min de leitura','😴 Apagar luzes'],dica:'Otimize 1% a cada dia. Pequenas melhorias compostas transformam sua vida.'}
+};
+function getCtx(){var c=localStorage.getItem('tdah_ctx')||'geral';return CTX[c]||CTX.geral;}
+
+// ═══ ATIVAÇÃO ═══
+function ativar(){
+  var c=document.getElementById('code').value.trim().toUpperCase();
+  if(CODIGOS.indexOf(c)>=0||CODIGOS.indexOf(c.replace('-',''))>=0){
+    localStorage.setItem('tdah_ok','1');
+    document.getElementById('ativacao').style.display='none';
+    if(!localStorage.getItem('tdah_ctx'))mostrarContexto();
+    else if(!localStorage.getItem('tdah_onb')){PASSO=0;mostrarOnboarding();}
+    else{document.getElementById('app').style.display='block';initApp();}
+  }else{document.getElementById('err').textContent='Código inválido';}
+}
+if(localStorage.getItem('tdah_ok')==='1'){
+  document.getElementById('ativacao').style.display='none';
+  if(!localStorage.getItem('tdah_ctx'))mostrarContexto();
+  else if(!localStorage.getItem('tdah_onb')){PASSO=0;mostrarOnboarding();}
+  else{document.getElementById('app').style.display='block';initApp();}
+}
+
+// ═══ CONTEXTO SELECAO ═══
+function mostrarContexto(){
+  document.getElementById('onboarding').style.display='flex';
+  var h='<h2 style="color:#93c5fd;margin-bottom:4px">🎯 Para que você quer usar o planner?</h2><p style="color:#94a3b8;font-size:13px;margin-bottom:4px">A dashboard se adapta ao seu objetivo.</p><div class="ctx-grid">';
+  var ctxs=[{k:'estudos',n:'Estudos',i:'📚',s:'Foco em provas e matérias'},{k:'trabalho',n:'Trabalho',i:'💼',s:'Produtividade profissional'},{k:'esporte',n:'Esporte',i:'🏃',s:'Treinos e saúde física'},{k:'curso',n:'Curso',i:'🎓',s:'Aprendizado contínuo'},{k:'geral',n:'Vida',i:'🌟',s:'Organização geral'}];
+  for(var i=0;i<ctxs.length;i++){var c=ctxs[i];var sel=(localStorage.getItem('tdah_ctx')||'geral')===c.k;h+='<div class="ctx-card'+(sel?' sel':'')+'" onclick="selContexto(\''+c.k+'\')"><div class="ctx-icon">'+c.i+'</div><div class="ctx-nome">'+c.n+'</div><div class="ctx-sub">'+c.s+'</div></div>';}
+  h+='</div><button class="btn" onclick="ctxConfirmar()">Confirmar →</button>';
+  document.getElementById('onbCard').innerHTML=h;
+}
+function selContexto(k){localStorage.setItem('tdah_ctx',k);mostrarContexto();}
+function ctxConfirmar(){
+  document.getElementById('onboarding').style.display='none';
+  PASSO=0;mostrarOnboarding();
+}
+
+// ═══ ONBOARDING ═══
+var PASSO=0;
+var PASSOS=[
+  {emoji:'⏰',ciencia:'Cegueira Temporal · Time Timer (PMID 41527987)',titulo:'Seu cérebro não vê o tempo',texto:'Quem tem TDAH tem dificuldade de <b>sentir o tempo passar</b>. Por isso o planner tem um <b>timer visual circular</b> — você VÊ o tempo diminuir. Use sessões curtas (Pomodoro adaptado).'},
+  {emoji:'🧊',ciencia:'Paralisia de Tarefa · Regra dos 5 Min (Behavioral Activation)',titulo:'Começar é a parte mais difícil',texto:'O botão <b>Só 5 Minutos</b> ativa um timer curtíssimo. A ciência mostra que <b>ação vem ANTES da motivação</b>. Também tem o método <b>Swiss Cheese</b>: fure tarefas grandes com micro-ações.'},
+  {emoji:'🧠',ciencia:'Disfunção Executiva · CBT/DBT · Reforço Imediato',titulo:'Seu cérebro funciona diferente',texto:'Máximo <b>3 prioridades por dia</b> (contra paralisia de decisão). <b>Brain dump</b> para esvaziar a mente. <b>Check-in emocional</b> e <b>celebração instantânea</b> ao concluir.'}
+];
+function mostrarOnboarding(){document.getElementById('onboarding').style.display='flex';renderOnb();}
+function renderOnb(){var s=PASSOS[PASSO],ult=PASSO===PASSOS.length-1;document.getElementById('onbCard').innerHTML='<div class="emoji">'+s.emoji+'</div><div class="ciencia">'+s.ciencia+'</div><h2>'+s.titulo+'</h2><p>'+s.texto+'</p><div class="onb-dots">'+PASSOS.map(function(_,i){return'<div class="onb-dot'+(i===PASSO?' ativo':'')+'"></div>';}).join('')+'</div><div class="onb-btns"><button class="onb-pular" onclick="pularOnb()">Pular</button><button class="onb-prox" onclick="'+(ult?'finalizarOnb()':'proxOnb()')+'">'+(ult?'✨ Começar':'Próximo →')+'</button></div>';}
+function proxOnb(){PASSO++;renderOnb();}
+function pularOnb(){document.getElementById('onboarding').style.display='none';localStorage.setItem('tdah_onb','1');document.getElementById('app').style.display='block';initApp();}
+function finalizarOnb(){document.getElementById('onboarding').style.display='none';localStorage.setItem('tdah_onb','1');document.getElementById('app').style.display='block';initApp();}
+
+// ═══ TIMER ═══
+function setTimer(min){TIMER_TOTAL=min*60;TIMER_SEGUNDOS=0;document.getElementById('timerDisplay').textContent=min+':00';document.getElementById('timerLabel').textContent='Timer Pomodoro ADHD ('+min+' min)';var btns=document.querySelectorAll('.timer-btns button:not(.run)');for(var i=0;i<btns.length;i++){btns[i].classList.remove('ativo');if(btns[i].textContent==min+' min')btns[i].classList.add('ativo');}resetTimer();}
+function toggleTimer(){if(TIMER_INTERVALO){pararTimer();return;}iniciarTimer();}
+function iniciarTimer(){var btn=document.getElementById('btnTimer');btn.textContent='⏸ Parar';btn.style.background='#dc2626';btn.style.borderColor='#dc2626';if(TIMER_SEGUNDOS===0)TIMER_SEGUNDOS=TIMER_TOTAL;TIMER_INTERVALO=setInterval(function(){TIMER_SEGUNDOS--;if(TIMER_SEGUNDOS<=0){pararTimer();navigator.vibrate&&navigator.vibrate([200,100,200]);alert('⏰ Tempo esgotado! Hora da pausa de 3-5 minutos.');return}var m=Math.floor(TIMER_SEGUNDOS/60),s=TIMER_SEGUNDOS%60;document.getElementById('timerDisplay').textContent=m+':'+(s<10?'0':'')+s;var pct=TIMER_SEGUNDOS/TIMER_TOTAL,circ=389.56*pct;document.getElementById('timerFg').setAttribute('stroke-dashoffset',389.56-circ);},1000);}
+function pararTimer(){if(TIMER_INTERVALO){clearInterval(TIMER_INTERVALO);TIMER_INTERVALO=null;}var btn=document.getElementById('btnTimer');btn.textContent='▶ Retomar';btn.style.background='#16a34a';btn.style.borderColor='#16a34a';}
+function resetTimer(){pararTimer();TIMER_SEGUNDOS=0;document.getElementById('timerFg').setAttribute('stroke-dashoffset','0');var btn=document.getElementById('btnTimer');btn.textContent='▶ Iniciar';btn.style.background='#16a34a';btn.style.borderColor='#16a34a';document.getElementById('timerDisplay').textContent=Math.floor(TIMER_TOTAL/60)+':00';}
+
+// ═══ DADOS ═══
+function getDD(d){var k='d'+d;if(!DADOS[k])DADOS[k]={prio:['','',''],prioDone:[false,false,false],foco:'',brain:'',energia:{m:0,t:0,n:0},emocional:0,conq:['','',''],conqDone:[false,false,false],rotinaM:[false,false,false,false,false],rotinaN:[false,false,false,false,false]};return DADOS[k];}
+function salvar(){localStorage.setItem('tdah_dados',JSON.stringify(DADOS));localStorage.setItem('tdah_dia',String(DIA));atualizarStats();var t=document.getElementById('toast');t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1200);}
+function diaPreenchido(d){var dd=getDD(d);return dd.prio.some(function(m){return m;})||dd.foco||dd.brain||dd.conq.some(function(c){return c;});}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ═══ STATS ═══
+function atualizarStats(){
+  var preen=0,total=0;for(var d=1;d<=30;d++){if(diaPreenchido(d))preen++;var dd=getDD(d);total+=dd.prioDone.filter(Boolean).length+dd.conqDone.filter(Boolean).length;}
+  document.getElementById('pct').textContent=Math.round(preen/30*100)+'%';
+  document.getElementById('totalFeito').textContent=total;
+  var s=0;for(var d=DIA;d>=1;d--){if(diaPreenchido(d))s++;else break;}
+  document.getElementById('streak').textContent=s;
+}
+
+// ═══ NAV ═══
+function buildNav(){var nav=document.getElementById('dayNav'),h='',hoje=new Date().getDate();for(var d=1;d<=30;d++){var c='';if(d===DIA)c=' ativo';if(diaPreenchido(d))c+=' feito';h+='<button class="'+c.trim()+'" onclick="irDia('+d+')">'+d+'</button>';}nav.innerHTML=h;}
+function irDia(d){salvar();DIA=d;renderDia();buildNav();}
+function goNextDay(){if(DIA<30)irDia(DIA+1);}
+function modo5min(){setTimer(5);iniciarTimer();alert('🔥 Modo Só 5 Minutos ativado!\n\nNão pense. Só faça.\nAção vem antes da motivação.');}
+function celebrar(){var emojis=['🎉','🌟','💪','🔥','✨','🏆','💙','🦋'];var e=emojis[Math.floor(Math.random()*emojis.length)];var el=document.createElement('div');el.className='confete';el.textContent=e;document.body.appendChild(el);setTimeout(function(){el.remove();},700);}
+
+// ═══ RENDER DIA (contexto-adaptado) ═══
+function renderDia(){
+  var dd=getDD(DIA),ctx=getCtx();
+  document.getElementById('dayBadge').textContent='Dia '+DIA;
+  document.getElementById('ctxTitle').textContent='🧠 '+ctx.nome;
+  document.getElementById('ctxBadge').textContent=ctx.nome;
+
+  var h='';
+  // Botão Só 5 Minutos
+  h+='<button class="btn-5min" onclick="modo5min()">⏱️ Só 5 Minutos — Não pense, só faça</button>';
+
+  // Prioridades contexto-adaptadas
+  var pd=dd.prioDone.filter(Boolean).length;
+  h+='<div class="card"><h3>🎯 Prioridades do Dia</h3><div class="help">Máximo <b>3 prioridades</b>. Menos opções = menos paralisia. <i>(Schwartz, 2004)</i></div><div class="counter">'+pd+'/3</div>';
+  for(var i=0;i<3;i++){var done=dd.prioDone[i];h+='<div class="prio-item'+(done?' feito':'')+'"><input type="checkbox" class="prio-check" '+(done?'checked':'')+' onchange="togPrio('+i+',this.checked)"><input type="text" placeholder="'+ctx.prio[i]+'" value="'+esc(dd.prio[i])+'" onchange="updPrio('+i+',this.value)"></div>';}
+  h+='</div>';
+
+  // Foco contexto-adaptado
+  h+='<div class="card"><h3>🔥 Foco do Dia</h3><div class="help"><b>1 coisa.</b> '+ctx.dica+'</div><textarea class="brain-input" style="min-height:48px" placeholder="'+ctx.foco+'" onchange="updFoco(this.value)">'+esc(dd.foco)+'</textarea></div>';
+
+  // Brain Dump
+  h+='<div class="card"><h3>🧹 Brain Dump</h3><div class="help"><b>Esvazie a mente.</b> Sem filtrar, sem organizar. <i>(GTD adaptado)</i></div><textarea class="brain-input" placeholder="Despeje tudo que está na sua cabeça agora..." onchange="updBrain(this.value)">'+esc(dd.brain)+'</textarea></div>';
+
+  // Swiss Cheese
+  h+='<div class="card"><h3>🧀 Furar o Queijo</h3><div class="help">Tarefa gigante? <b>Fure ela</b> com micro-ações. <i>(Lakein, 1973)</i></div>';
+  var micros=dd.micros||['','',''];for(var i=0;i<3;i++){h+='<div class="prio-item"><span style="font-size:12px;color:#64748b;width:20px">'+(i+1)+'.</span><input type="text" placeholder="'+ctx.micro[i]+'" value="'+esc(micros[i])+'" onchange="updMicro('+i+',this.value)"></div>';}
+  h+='</div>';
+
+  // Energia
+  h+='<div class="card"><h3>⚡ Energia</h3><div class="help">1 = esgotado, 5 = pico.</div><div class="meter-row">';
+  [{k:'m',l:'Manhã ☀️'},{k:'t',l:'Tarde 🌤️'},{k:'n',l:'Noite 🌙'}].forEach(function(p){h+='<div class="meter-col"><label>'+p.l+'</label><div class="meter-btns">';for(var v=1;v<=5;v++)h+='<button class="meter-btn'+(dd.energia[p.k]===v?' sel':'')+'" onclick="updEnergia(\''+p.k+'\','+v+')">'+v+'</button>';h+='</div></div>';});
+  h+='</div></div>';
+
+  // Check-in Emocional
+  h+='<div class="card"><h3>💙 Check-in Emocional</h3><div class="help">Como está agora? <i>(CBT self-monitoring)</i></div><div class="meter-row"><div class="meter-col"><label>😤 Frustrado</label><div class="meter-btns">';for(var v=1;v<=5;v++)h+='<button class="meter-btn'+(dd.emocional===v?' sel':'')+'" onclick="updEmocional('+v+')">'+v+'</button>';h+='</div></div></div></div>';
+  if(dd.emocional>=4){h+='<div class="stop-card"><h3>🛑 STOP — Regulação Emocional</h3><div class="help" style="color:#fbbf24"><b>S</b>top — Pare<br><b>T</b>ake a breath — Respire 3x<br><b>O</b>bserve — O que sente?<br><b>P</b>roceed — Prossiga com gentileza<br><br><i>DBT adaptada TDAH (PMID 42106651)</i></div></div>';}
+
+  // Conquistas
+  var cd=dd.conqDone.filter(Boolean).length;
+  h+='<div class="card"><h3>✅ Hoje eu consegui...</h3><div class="help">Celebre <b>qualquer vitória</b>. Dopamina importa.</div><div class="counter">'+cd+'/3</div>';
+  for(var i=0;i<3;i++){h+='<div class="conq-item'+(dd.conqDone[i]?' feito':'')+'" onclick="togConq('+i+')"><div class="conq-dot"></div><input type="text" placeholder="'+['Ex: Levantei da cama','Ex: Tomei água','Ex: Fiz 5 min de algo'][i]+'" value="'+esc(dd.conq[i])+'" onchange="updConq('+i+',this.value)" onclick="event.stopPropagation()"></div>';}
+  h+='</div>';
+
+  if(DIA%5===0){var rk='r'+DIA;if(!DADOS[rk])DADOS[rk]={bom:'',melhorar:''};h+='<div class="card"><h3>✨ Revisão da Semana</h3><div class="help">Sem julgamento. <i>(CBT protocol)</i></div><p style="font-size:13px;font-weight:600;color:#93c5fd;margin-bottom:6px">✅ O que funcionou:</p><textarea class="review-input" placeholder="O que deu certo essa semana?" onchange="updReview(\'bom\',this.value)">'+esc(DADOS[rk].bom)+'</textarea><p style="font-size:13px;font-weight:600;color:#93c5fd;margin-bottom:6px">🔧 O que ajustar:</p><textarea class="review-input" placeholder="O que posso fazer diferente?" onchange="updReview(\'melhorar\',this.value)">'+esc(DADOS[rk].melhorar)+'</textarea></div>';}
+  if(DIA===30){h+='<div class="card" style="text-align:center"><div style="font-size:64px">🏆</div><h2 style="color:#4ade80;margin:12px 0">30 Dias!</h2><p style="color:#94a3b8;line-height:1.7"><b>Você apareceu</b>. Consistência > perfeição.</p><p style="margin-top:12px;color:#fca5a5;font-weight:600">TDAH não é defeito. É um jeito diferente de processar o mundo. 💙</p></div>';}
+
+  document.getElementById('content').innerHTML=h;
+  buildNav();
+}
+
+// ═══ ROTINA (contexto-adaptada) ═══
+function mostrarRotina(){
+  var dd=getDD(DIA),ctx=getCtx();
+  var h='<div class="card"><h3>🌅 Rotina Matinal</h3><div class="help"><i>Habit stacking (Clear, 2018)</i></div>';
+  for(var i=0;i<5;i++){h+='<div class="rotina-item'+(dd.rotinaM[i]?' feito':'')+'" onclick="togRotinaM('+i+')"><input type="checkbox" class="rotina-check" '+(dd.rotinaM[i]?'checked':'')+'><span>'+ctx.manha[i]+'</span></div>';}
+  h+='</div><div class="card"><h3>🌙 Rotina Noturna</h3><div class="help"><i>Estrutura externa reduz carga cognitiva (Barkley, 2015)</i></div>';
+  for(var i=0;i<5;i++){h+='<div class="rotina-item'+(dd.rotinaN[i]?' feito':'')+'" onclick="togRotinaN('+i+')"><input type="checkbox" class="rotina-check" '+(dd.rotinaN[i]?'checked':'')+'><span>'+ctx.noite[i]+'</span></div>';}
+  h+='</div><button class="btn" style="margin-top:12px" onclick="renderDia()">← Voltar</button>';
+  document.getElementById('content').innerHTML=h;
+}
+
+// ═══ ANALYTICS ═══
+function mostrarAnalytics(){
+  var ctx=getCtx(),h='';
+  // Calcular métricas
+  var diasPreen=0,totalPrio=0,totalPrioDone=0,totalConq=0,totalConqDone=0,emocMedio=0,emocCount=0,energiaM=[],energiaT=[];
+  for(var d=1;d<=DIA;d++){
+    if(diaPreenchido(d))diasPreen++;
+    var dd=getDD(d);
+    totalPrio+=3;totalPrioDone+=dd.prioDone.filter(Boolean).length;
+    totalConq+=3;totalConqDone+=dd.conqDone.filter(Boolean).length;
+    if(dd.emocional>0){emocMedio+=dd.emocional;emocCount++;}
+    if(dd.energia.m>0)energiaM.push(dd.energia.m);
+    if(dd.energia.t>0)energiaT.push(dd.energia.t);
+  }
+  var pctPrio=totalPrio>0?Math.round(totalPrioDone/totalPrio*100):0;
+  var pctConq=totalConq>0?Math.round(totalConqDone/totalConq*100):0;
+  var pctDias=Math.round(diasPreen/DIA*100);
+  var medEmoc=emocCount>0?(emocMedio/emocCount).toFixed(1):'—';
+  var medEnergiaM=energiaM.length>0?(energiaM.reduce(function(a,b){return a+b;},0)/energiaM.length).toFixed(1):'—';
+
+  h+='<div class="ctx-header" onclick="mostrarContexto()" style="justify-content:center"><span id="ctxBadge">'+ctx.nome+'</span> · Analytics</div>';
+
+  // Insights
+  if(diasPreen===0){h+='<div class="insight-box"><p>👋 Comece preenchendo seu primeiro dia! Mesmo 1 tarefa já conta. Não precisa ser perfeito.</p></div>';}
+  else if(pctPrio<30){h+='<div class="insight-box"><p>💡 Suas prioridades estão com '+pctPrio+'% de conclusão. Tente o botão <b>Só 5 Minutos</b> — ação antes da motivação.</p></div>';}
+  else if(pctPrio>=70){h+='<div class="insight-box"><p>🔥 Você está concluindo '+pctPrio+'% das prioridades! Isso é excelente. Continue mantendo o ritmo.</p></div>';}
+  if(diasPreen>0&&diasPreen<=3){h+='<div class="insight-box"><p>🌱 '+diasPreen+' de '+DIA+' dias preenchidos. Construindo o hábito. Cada dia conta, mesmo os "ruins".</p></div>';}
+
+  // Barras
+  h+='<div class="anal-card"><div class="anal-label"><span>📅 Dias preenchidos</span><span>'+diasPreen+'/'+DIA+' ('+pctDias+'%)</span></div><div class="anal-bar"><div class="anal-fill" style="width:'+pctDias+'%;background:#60a5fa"></div></div></div>';
+  h+='<div class="anal-card"><div class="anal-label"><span>🎯 Prioridades concluídas</span><span>'+totalPrioDone+'/'+totalPrio+' ('+pctPrio+'%)</span></div><div class="anal-bar"><div class="anal-fill" style="width:'+pctPrio+'%;background:#4ade80"></div></div></div>';
+  h+='<div class="anal-card"><div class="anal-label"><span>✅ Conquistas registradas</span><span>'+totalConqDone+'/'+totalConq+' ('+pctConq+'%)</span></div><div class="anal-bar"><div class="anal-fill" style="width:'+pctConq+'%;background:#a78bfa"></div></div></div>';
+  h+='<div class="anal-card"><div class="anal-label"><span>💙 Humor médio (1-5)</span><span>'+medEmoc+'</span></div></div>';
+  h+='<div class="anal-card"><div class="anal-label"><span>⚡ Energia matinal média (1-5)</span><span>'+medEnergiaM+'</span></div></div>';
+
+  // Contexto
+  h+='<div class="insight-box"><p>🎯 Contexto: <b>'+ctx.nome+'</b><br>'+ctx.dica+'</p></div>';
+
+  h+='<button class="btn" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;margin-top:8px" onclick="renderDia()">← Voltar ao planner</button>';
+  document.getElementById('content').innerHTML=h;
+}
+
+function mostrarModo(){
+  var h='<div class="card"><h3>⚡ Escolha o Modo</h3><div class="help">Cada modo ativa uma técnica científica.</div>';
+  h+='<button class="btn-5min" onclick="modo5min();renderDia()">⏱️ Só 5 Minutos</button>';
+  h+='<button class="btn" style="background:#7c3aed;margin-bottom:8px" onclick="modoBrainDump()">🧹 Brain Dump</button>';
+  h+='<button class="btn" style="background:#0ea5e9;margin-bottom:8px" onclick="modoSTOP()">🛑 STOP — Regulação</button>';
+  h+='<button class="btn" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;margin-bottom:8px" onclick="mostrarContexto()">🎯 Mudar contexto</button>';
+  h+='<button class="btn" style="background:#1e293b;color:#94a3b8;border:1px solid #334155" onclick="renderDia()">← Voltar</button></div>';
+  document.getElementById('content').innerHTML=h;
+}
+function modoBrainDump(){renderDia();setTimeout(function(){var b=document.querySelector('.brain-input');if(b){b.focus();b.scrollIntoView();}},300);}
+function modoSTOP(){alert('🛑 STOP\n\nS — Pare o que está fazendo\nT — Take a breath (respire 3x)\nO — Observe seus sentimentos\nP — Proceed (prossiga com gentileza)\n\nVocê não é seus pensamentos. Eles passam.');}
+
+// ═══ DICAS ═══ (mantido do anterior)
+var DICA_CAT='foco';
+var DICAS={
+  foco:{titulo:'🎯 Foco & Atenção',dicas:[
+    {h:'Regra dos 5 Minutos',p:'Se não consegue começar, diga "vou fazer só 5 minutos". Ação vem antes da motivação.','f':'Behavioral Activation · Safren et al. (2010) JAMA'},
+    {h:'Uma coisa de cada vez',p:'Multitarefa é mito. Escolha UMA e vá até o fim (ou até o timer apitar).','f':'Ophir et al. (2009) PNAS'},
+    {h:'Timer visual sempre visível',p:'A cegueira temporal some quando você VÊ o tempo passando.','f':'Time Timer · Barkley (2012)'},
+    {h:'Ambiente externo importa',p:'Tire o celular do campo de visão, feche abas, ponha fones com ruído marrom.','f':'Design Ambiental · Clear (2018)'},
+    {h:'Brown noise',p:'Frequências graves acalmam o cérebro TDAH. Busque no YouTube "brown noise ADHD".','f':'PMID 40160204'}
+  ]},
+  inicio:{titulo:'🚀 Iniciar Tarefas',dicas:[
+    {h:'Quebre em pedaços ridículos',p:'Escrever relatório paralisa. Abrir o Word não.','f':'Lakein (1973) · Swiss Cheese'},
+    {h:'Corpo em movimento',p:'Travado há 10+ min? Levante, ande 2 min, beba água, volte.','f':'PMID 41638541 · Exercício e TDAH'},
+    {h:'Temptation Bundling',p:'Só posso ouvir podcast ENQUANTO lavo a louça.','f':'Milkman et al. (2014)'},
+    {h:'5-4-3-2-1',p:'Conte regressivamente e MEXA-SE. Override do sistema de paralisia.','f':'Robbins (2017)'},
+    {h:'Deixe pronto na noite anterior',p:'Roupa de treino AO LADO da cama. Reduza o atrito.','f':'Fogg (2019) · Tiny Habits'}
+  ]},
+  emocao:{titulo:'💙 Regular Emoções',dicas:[
+    {h:'Nomeie o sentimento',p:'Diga em voz alta. Nomear ativa o córtex pré-frontal.','f':'Lieberman et al. (2007)'},
+    {h:'Respiração 4-7-8',p:'Inspire 4s, segure 7s, solte 8s. 3 ciclos.','f':'DBT · Linehan (2014)'},
+    {h:'Regra dos 90 segundos',p:'A resposta química da emoção dura ~90s. Depois é você alimentando.','f':'Taylor (2009)'},
+    {h:'Movimento para descarregar',p:'Flexões, polichinelos. O corpo precisa descarregar.','f':'Terapia Somática · van der Kolk'},
+    {h:'Não decida emocionalmente',p:'Nunca decida bravo, triste ou eufórico. Espere.','f':'DBT Emotion Regulation'}
+  ]},
+  habitos:{titulo:'🔄 Criar Hábitos',dicas:[
+    {h:'Habit Stacking',p:'Amarre novo hábito a um existente: Depois de [X] farei [Y].','f':'Clear (2018) · Atomic Habits'},
+    {h:'Micro-hábitos',p:'Quer meditar? 1 minuto. Quer ler? 1 página.','f':'Fogg (2019) · Tiny Habits'},
+    {h:'Nunca quebre a corrente',p:'Calendário visual de dias seguidos. Quebrou? Comece outra corrente.','f':'Gamificação'},
+    {h:'Design de ambiente',p:'Frutas VISÍVEIS na mesa. App longe da tela inicial.','f':'Thaler & Sunstein · Nudge'},
+    {h:'Rotina = menos decisões',p:'Rotinas preservam poder de decisão para o que importa.','f':'Baumeister · Ego Depletion'}
+  ]},
+  corpo:{titulo:'🏃 Corpo & Cérebro',dicas:[
+    {h:'Exercício antes de tarefas',p:'10 min de exercício melhoram atenção por até 2h.','f':'PMID 41638541'},
+    {h:'Proteína no café',p:'Dopamina vem da tirosina (proteína). Ovos, iogurte, whey.','f':'Faraone (2021)'},
+    {h:'Água SEMPRE visível',p:'Desidratação leve já prejudica funções executivas.','f':'Masento et al. (2014)'},
+    {h:'Sono é inegociável',p:'Mesmo horário todo dia. Sem tela 30 min antes.','f':'Hvolby (2015)'},
+    {h:'Cafeína estratégica',p:'1 xícara 30 min antes de tarefa difícil. Evite após 14h.','f':'International Consensus'}
+  ]}
+};
+function mostrarDicas(){
+  var cat=DICA_CAT||'foco',cats=Object.keys(DICAS),d=DICAS[cat];
+  var h='<div class="disclaimer"><p>⚠️ <b>Isso não é avaliação médica.</b> Estas dicas são educacionais. Consulte um profissional de saúde.</p></div>';
+  h+='<div class="dica-nav">';for(var i=0;i<cats.length;i++){h+='<button class="'+(cats[i]===cat?'sel':'')+'" onclick="DICA_CAT=\''+cats[i]+'\';mostrarDicas()">'+DICAS[cats[i]].titulo+'</button>';}h+='</div>';
+  for(var i=0;i<d.dicas.length;i++){var t=d.dicas[i];h+='<div class="dica-card"><h4>'+t.h+'</h4><p>'+t.p+'</p><div class="fonte">📚 '+t.f+'</div></div>';}
+  h+='<button class="btn" style="background:#1e293b;color:#94a3b8;border:1px solid #334155;margin-top:8px" onclick="renderDia()">← Voltar ao planner</button>';
+  document.getElementById('content').innerHTML=h;
+}
+
+// ═══ UPDATES ═══
+function updPrio(i,v){getDD(DIA).prio[i]=v;salvar();}
+function togPrio(i,c){getDD(DIA).prioDone[i]=c;salvar();if(c)celebrar();renderDia();}
+function updFoco(v){getDD(DIA).foco=v;salvar();}
+function updBrain(v){getDD(DIA).brain=v;salvar();}
+function updMicro(i,v){var dd=getDD(DIA);if(!dd.micros)dd.micros=['','',''];dd.micros[i]=v;salvar();}
+function updEnergia(p,v){getDD(DIA).energia[p]=v;salvar();renderDia();}
+function updEmocional(v){getDD(DIA).emocional=v;salvar();renderDia();}
+function updConq(i,v){getDD(DIA).conq[i]=v;salvar();}
+function togConq(i){var dd=getDD(DIA);dd.conqDone[i]=!dd.conqDone[i];salvar();if(dd.conqDone[i])celebrar();renderDia();}
+function updReview(f,v){var rk='r'+DIA;if(!DADOS[rk])DADOS[rk]={bom:'',melhorar:''};DADOS[rk][f]=v;salvar();}
+function togRotinaM(i){var dd=getDD(DIA);dd.rotinaM[i]=!dd.rotinaM[i];salvar();if(dd.rotinaM[i])celebrar();mostrarRotina();}
+function togRotinaN(i){var dd=getDD(DIA);dd.rotinaN[i]=!dd.rotinaN[i];salvar();if(dd.rotinaN[i])celebrar();mostrarRotina();}
+
+// ═══ INIT ═══
+function initApp(){
+  var ctx=getCtx();
+  setTimer(ctx.timer);
+  document.getElementById('ctxTitle').textContent='🧠 '+ctx.nome;
+  document.getElementById('ctxBadge').textContent=ctx.nome;
+  renderDia();atualizarStats();pwaInit();
+}
+
+// ═══ PWA ═══
+var pwaEvento;
+function pwaInit(){
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();pwaEvento=e;setTimeout(function(){document.getElementById('installBanner').style.display='flex';},2000);});
+  if(window.matchMedia('(display-mode: standalone)').matches){document.getElementById('installBanner').style.display='none';}
+}
+function instalarApp(){
+  if(pwaEvento){pwaEvento.prompt();pwaEvento.userChoice.then(function(r){document.getElementById('installBanner').style.display='none';if(r.outcome==='accepted'){alert('🧠 Planner instalado!');}});}
+  else{alert('Toque nos 3 pontinhos do Chrome e selecione "Adicionar à tela inicial".');}
+}
+function fecharInstall(){document.getElementById('installBanner').style.display='none';localStorage.setItem('tdah_install_fechado','1');}
+var fechado=localStorage.getItem('tdah_install_fechado');
+if(fechado){var d=new Date();if(parseInt(fechado)===d.getDate()){setTimeout(function(){document.getElementById('installBanner').style.display='none';},100);}else{localStorage.removeItem('tdah_install_fechado');}}
+</script>
+</body>
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1e293b">
+<meta name="color-scheme" content="dark light">
+<title>Planner TDAH 30 Dias</title>
+<link rel="manifest" href="manifest.json">
+<style>
+/* ═══ PALETA — Contraste máximo AAA ═══ */
+:root {
+  /* Modo claro (fallback) */
+  --bg:       #ffffff;  /* branco puro */
+  --card:     #f8fafc;  /* quase branco */
+  --border:   #cbd5e1;  /* cinza visível */
+  --text:     #0f172a;  /* quase preto */
+  --text2:    #475569;  /* cinza escuro */
+  --blue:     #1d4ed8;  /* azul forte */
+  --green:    #15803d;  /* verde forte */
+  --red:      #b91c1c;  /* vermelho forte */
+  --purple:   #6d28d9;  /* roxo forte */
+  --orange:   #c2410c;  /* laranja forte */
+  --white:    #ffffff;
+  --btn-text: #ffffff;
+}
+
+/* ═══ MODO ESCURO — cores vibrantes sobre fundo escuro ═══ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:       #0f172a;  /* azul escuro profundo */
+    --card:     #1e293b;  /* azul escuro médio */
+    --border:   #334155;  /* borda visível */
+    --text:     #f1f5f9;  /* branco suave */
+    --text2:    #94a3b8;  /* cinza claro */
+    --blue:     #60a5fa;  /* azul brilhante */
+    --green:    #4ade80;  /* verde brilhante */
+    --red:      #f87171;  /* vermelho claro */
+    --purple:   #a78bfa;  /* roxo claro */
+    --orange:   #fb923c;  /* laranja claro */
+    --white:    #ffffff;
+    --btn-text: #0f172a;
+  }
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 16px 16px 32px;
+  -webkit-tap-highlight-color: transparent;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* ═══ ATIVAÇÃO ═══ */
+#activation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80vh;
+  gap: 20px;
+}
+#activation h1 {
+  font-size: 28px;
+  color: var(--blue);
+  text-align: center;
+  font-weight: 800;
+}
+#activation > p {
+  color: var(--text2);
+  text-align: center;
+  font-size: 16px;
+  line-height: 1.7;
+}
+#activation > p b {
+  color: var(--text);
+}
+#activation input {
+  width: 100%;
+  max-width: 300px;
+  padding: 16px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 20px;
+  text-align: center;
+  letter-spacing: 3px;
+  outline: none;
+  font-weight: 700;
+}
+#activation input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(96,165,250,.3);
+}
+#activation input::placeholder {
+  color: var(--text2);
+  opacity: .5;
+}
+#activation button, .btn {
+  padding: 16px 40px;
+  background: var(--blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  letter-spacing: 0.5px;
+}
+#activation button:active, .btn:active {
+  opacity: .85;
+  transform: scale(.97);
+}
+#activation .error {
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ═══ APP ═══ */
+#app { display: none; }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 16px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 12px;
+}
+header h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--blue);
+}
+header .day-badge {
+  background: var(--card);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+
+/* ═══ ONBOARDING ═══ */
+#onboarding {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.onboard-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 24px;
+  padding: 36px 24px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+}
+.onboard-card .emoji { font-size: 64px; margin-bottom: 16px; }
+.onboard-card h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--blue);
+  margin-bottom: 12px;
+}
+.onboard-card p {
+  color: var(--text2);
+  font-size: 15px;
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+.onboard-card p b {
+  color: var(--text);
+}
+.onboard-dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.onboard-dot {
+  width: 10px; height: 10px;
+  border-radius: 5px;
+  background: var(--border);
+  transition: all .3s;
+}
+.onboard-dot.active {
+  background: var(--blue);
+  width: 28px;
+}
+.onboard-btns {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+.onboard-btns button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+.onboard-skip {
+  background: transparent;
+  color: var(--text2);
+}
+.onboard-next {
+  background: var(--blue);
+  color: #ffffff;
+}
+
+/* ═══ NAVEGAÇÃO ═══ */
+nav {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding: 10px 0;
+  scrollbar-width: none;
+}
+nav::-webkit-scrollbar { display: none; }
+nav button {
+  flex-shrink: 0;
+  min-width: 36px; height: 36px;
+  border-radius: 18px;
+  border: 1.5px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+nav button.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #ffffff;
+}
+nav button.today {
+  border-color: var(--green);
+  border-width: 2px;
+}
+nav button .dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 3px;
+  background: var(--green);
+}
+
+/* ═══ CARDS ═══ */
+.card {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 14px;
+  position: relative;
+}
+.card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+}
+.card h3 .icon { font-size: 22px; }
+.card .help {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.card .help b { color: var(--text); }
+.card .counter {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+}
+
+/* ═══ MICRO-METAS ═══ */
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.meta-item:last-child { border-bottom: none; }
+.meta-item input[type="text"] {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 16px;
+  outline: none;
+  padding: 4px 0;
+  font-family: inherit;
+}
+.meta-item input[type="text"]::placeholder {
+  color: var(--text2);
+  opacity: .5;
+  font-size: 14px;
+}
+.meta-item input[type="checkbox"] {
+  appearance: none;
+  width: 28px; height: 28px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  background: var(--bg);
+}
+.meta-item input[type="checkbox"]:checked {
+  background: var(--green);
+  border-color: var(--green);
+}
+.meta-item input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+}
+.meta-item.done input[type="text"] {
+  text-decoration: line-through;
+  color: var(--text2);
+}
+
+/* ═══ FOCO ═══ */
+.foco-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  color: var(--text);
+  font-size: 16px;
+  outline: none;
+  resize: none;
+  font-family: inherit;
+  min-height: 56px;
+}
+.foco-input:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(251,146,60,.25);
+}
+.foco-input::placeholder {
+  color: var(--text2);
+  opacity: .5;
+  font-size: 14px;
+}
+
+/* ═══ NOTAS ═══ */
+.notas-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  color: var(--text);
+  font-size: 15px;
+  min-height: 72px;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+}
+.notas-input::placeholder {
+  color: var(--text2);
+  opacity: .5;
+  font-size: 14px;
+}
+.notas-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(96,165,250,.25);
+}
+
+/* ═══ ENERGIA ═══ */
+.energy-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+.energy-col {
+  flex: 1;
+  text-align: center;
+}
+.energy-col label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  display: block;
+  margin-bottom: 8px;
+}
+.energy-btns {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+.energy-btn {
+  width: 32px; height: 32px;
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.energy-btn.sel {
+  background: var(--purple);
+  border-color: var(--purple);
+  color: #ffffff;
+}
+.energy-btn:active:not(.sel) {
+  border-color: var(--text2);
+}
+
+/* ═══ CONQUISTAS ═══ */
+.conq-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.conq-item input[type="text"] {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+  cursor: text;
+}
+.conq-item input[type="text"]::placeholder {
+  color: var(--text2);
+  opacity: .5;
+  font-size: 13px;
+}
+.conq-dot {
+  width: 14px; height: 14px;
+  border-radius: 7px;
+  border: 2px solid var(--border);
+  background: var(--bg);
+  flex-shrink: 0;
+  transition: all .2s;
+}
+.conq-item.done .conq-dot {
+  background: var(--green);
+  border-color: var(--green);
+}
+.conq-item.done input[type="text"] {
+  text-decoration: line-through;
+  color: var(--text2);
+}
+
+/* ═══ REVISÃO ═══ */
+.review-section { margin-bottom: 18px; }
+.review-section h4 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue);
+  margin-bottom: 8px;
+}
+.review-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--text);
+  font-size: 15px;
+  min-height: 50px;
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+}
+.review-input::placeholder {
+  color: var(--text2);
+  opacity: .5;
+  font-size: 13px;
+}
+.review-input:focus {
+  border-color: var(--purple);
+  box-shadow: 0 0 0 3px rgba(167,139,250,.25);
+}
+
+/* ═══ CELEBRAÇÃO ═══ */
+.celebracao {
+  text-align: center;
+  padding: 24px 0;
+}
+.celebracao .trophy { font-size: 72px; }
+.celebracao h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--green);
+  margin: 16px 0 8px;
+}
+.celebracao .msg {
+  color: var(--text2);
+  font-size: 15px;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+/* ═══ BOTTOM BAR ═══ */
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding: 14px 0;
+  border-top: 2px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  z-index: 100;
+}
+.bottom-bar button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn-prev {
+  background: var(--card) !important;
+  color: var(--text) !important;
+  border: 1.5px solid var(--border) !important;
+}
+.btn-next {
+  background: var(--blue) !important;
+  color: #ffffff !important;
+}
+
+/* ═══ NOTIFICAÇÃO ═══ */
+.notif-banner {
+  position: fixed;
+  top: 16px;
+  left: 16px; right: 16px;
+  background: var(--card);
+  border: 2px solid var(--green);
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 448px;
+  margin: 0 auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  animation: slideDown .3s;
+}
+.notif-banner .n-icon { font-size: 28px; }
+.notif-banner .n-text {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.notif-banner .n-text b { color: var(--green); }
+.notif-banner .n-close {
+  background: none;
+  border: none;
+  color: var(--text2);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 6px;
+}
+@keyframes slideDown {
+  from { transform: translateY(-80px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* ═══ PROGRESSO ═══ */
+.progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  margin: 8px 0 14px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 3px;
+  transition: width .5s;
+  min-width: 0;
+}
+.progress-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* ═══ TOAST ═══ */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--green);
+  color: white;
+  padding: 12px 28px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 700;
+  z-index: 999;
+  opacity: 0;
+  transition: opacity .3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+
+/* ═══ FOOTER ═══ */
+.footer-info {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--text2);
+  font-size: 12px;
+  line-height: 2;
+}
+.footer-info b { color: var(--text); }
+.footer-info button {
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  font-family: inherit;
+}
+</style>
+</head>
+<body>
+
+<!-- ATIVAÇÃO -->
+<div id="activation">
+  <h1>🧠 Planner TDAH</h1>
+  <p>30 dias de organização para quem tem<br>déficit de atenção. <b>Sem culpa.</b><br><br>🔑 Você recebeu um código?<br>Digite abaixo para começar:</p>
+  <input type="text" id="code" placeholder="XXXX-XXXX" maxlength="9" autocomplete="off" inputmode="text">
+  <button id="btnActivate">Começar Agora</button>
+  <div class="error" id="error"></div>
+  <p style="font-size:11px;color:var(--text2);opacity:.5;margin-top:8px">v6 · Digite o código e o planner abre sozinho</p>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <h1>🧠 Meu Planner</h1>
+    <div class="day-badge" id="dayBadge">Dia 1</div>
+  </header>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">Nenhum dia preenchido ainda</div>
+  <nav id="dayNav"></nav>
+  <div id="content"></div>
+  <div class="footer-info">
+    💡 <b>Dica:</b> Preencha pelo menos o Foco do Dia.<br>
+    <button data-action="showOnboarding">📖 Ver tutorial novamente</button><br>
+    <button data-action="requestNotification">🔔 Ativar lembretes diários (20h)</button>
+  </div>
+  <div class="bottom-bar">
+    <button class="btn-prev" data-action="prevDay">◀ Dia anterior</button>
+    <button class="btn-next" data-action="nextDay">Próximo dia ▶</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">💾 Salvo!</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="onboard-card" id="onboardCard"></div>
+</div>
+
+<script>
+// ═══ ATIVAÇÃO ═══
+const VALID_CODES = ['TDAH2026','PLANNER30','FOCO2026','MENTE2026','ATIVA123'];
+function activate(){
+  const code=document.getElementById('code').value.trim().toUpperCase();
+  if(VALID_CODES.includes(code.replace('-','')) || VALID_CODES.includes(code)){
+    localStorage.setItem('planner_tdah_activated','true');
+    document.getElementById('activation').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  }else{
+    document.getElementById('error').textContent='Código inválido. Verifique e tente novamente.';
+  }
+}
+// ═══ EVENT LISTENERS ═══
+function setupListeners(){
+  // Botão de ativação
+  const btn=document.getElementById('btnActivate');
+  if(btn){btn.onclick=activate;}
+  // Atalho: Enter no campo de código + ATIVAÇÃO AUTOMÁTICA
+  const codeInput=document.getElementById('code');
+  if(codeInput){
+    codeInput.addEventListener('keydown',function(e){if(e.key==='Enter')activate();});
+    // Ativação automática: quando digitar 8+ caracteres, tenta ativar
+    codeInput.addEventListener('input',function(){
+      if(this.value.trim().length >= 8) activate();
+    });
+  }
+  // Delegação global de cliques para data-action
+  document.body.addEventListener('click',function(e){
+    const el=e.target.closest('[data-action]');
+    if(!el)return;
+    const action=el.getAttribute('data-action');
+    if(action==='showOnboarding')showOnboarding();
+    else if(action==='requestNotification')requestNotification();
+    else if(action==='prevDay')prevDay();
+    else if(action==='nextDay')nextDay();
+    else if(action==='goToDay')goToDay(parseInt(el.getAttribute('data-day')));
+    else if(action==='toggleConq')toggleConq(parseInt(el.getAttribute('data-idx')));
+    else if(action==='setEnergia')setEnergia(el.getAttribute('data-key'),parseInt(el.getAttribute('data-val')));
+    else if(action==='updateReview')updateReview(el.getAttribute('data-field'),parseInt(el.getAttribute('data-val')));
+    else if(action==='skipOnboard')skipOnboard();
+    else if(action==='finishOnboard')finishOnboard();
+    else if(action==='nextOnboard')nextOnboard();
+  });
+  // Auto-init se já ativado
+  if(localStorage.getItem('planner_tdah_activated')==='true'){
+    document.getElementById('activation').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  }
+}
+// Garante que roda com DOM pronto
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',setupListeners);
+}else{
+  setupListeners();
+}
+
+// ═══ APP ═══
+let currentDay=parseInt(localStorage.getItem('planner_tdah_day')||'1');
+let data=JSON.parse(localStorage.getItem('planner_tdah_data')||'{}');
+
+function save(){
+  localStorage.setItem('planner_tdah_data',JSON.stringify(data));
+  localStorage.setItem('planner_tdah_day',currentDay);
+  updateProgress();
+  const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1200);
+}
+function getDD(d){
+  const k=`day_${d}`;
+  if(!data[k])data[k]={metas:['','',''],metasDone:[false,false,false],foco:'',notas:'',energia:{manha:0,tarde:0,noite:0},conquistas:['','',''],conquistasDone:[false,false,false]};
+  return data[k];
+}
+function isDayFilled(d){
+  const dd=getDD(d);
+  return dd.metas.some(m=>m)||dd.foco||dd.conquistas.some(c=>c)||dd.notas;
+}
+
+function updateProgress(){
+  let filled=0;
+  for(let d=1;d<=30;d++){if(isDayFilled(d))filled++}
+  const pct=Math.round(filled/30*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressLabel').textContent=pct===0?'Nenhum dia preenchido ainda':`${filled} de 30 dias preenchidos (${pct}%)`;
+}
+
+// ═══ ONBOARDING ═══
+const ONBOARD_STEPS=[
+  {emoji:'👋',title:'Bem-vindo(a)!',text:'Este planner foi feito para o <b>seu cérebro</b>. Nada de listas enormes ou culpa por não cumprir. Aqui a gente celebra pequenas vitórias. <b>Deslize para continuar →</b>'},
+  {emoji:'☀️',title:'Como funciona',text:'Todo dia você define <b>3 micro-metas</b> (máximo 15 minutos cada). Escolhe <b>1 foco</b> — a coisa mais importante do dia. E marca sua <b>energia</b> de 1 a 5. Simples assim.'},
+  {emoji:'✨',title:'Sem culpa!',text:'Se um dia for ruim? <b>Vire a página.</b> Este planner não pune. A cada 5 dias tem uma <b>revisão rápida</b>. No fim do mês, uma <b>celebração</b>. Você no seu ritmo, sem pressão.'}
+];
+let onboardStep=0;
+
+function showOnboarding(){
+  onboardStep=0;
+  document.getElementById('onboarding').style.display='flex';
+  renderOnboard();
+}
+function renderOnboard(){
+  const s=ONBOARD_STEPS[onboardStep];
+  const isLast=onboardStep===ONBOARD_STEPS.length-1;
+  document.getElementById('onboardCard').innerHTML=`
+    <div class="emoji">${s.emoji}</div>
+    <h2>${s.title}</h2>
+    <p>${s.text}</p>
+    <div class="onboard-dots">${ONBOARD_STEPS.map((_,i)=>`<div class="onboard-dot${i===onboardStep?' active':''}"></div>`).join('')}</div>
+    <div class="onboard-btns">
+      <button class="onboard-skip" data-action="skipOnboard">Pular</button>
+      <button class="onboard-next" data-action="${isLast?'finishOnboard':'nextOnboard'}">${isLast?'✨ Começar':'Próximo →'}</button>
+    </div>`;
+}
+function nextOnboard(){onboardStep++;renderOnboard()}
+function skipOnboard(){document.getElementById('onboarding').style.display='none'}
+function finishOnboard(){document.getElementById('onboarding').style.display='none';localStorage.setItem('planner_tdah_onboarded','true')}
+
+// ═══ NOTIFICAÇÕES ═══
+function requestNotification(){
+  if(!('Notification' in window)){alert('Seu dispositivo não suporta notificações.');return}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){
+      scheduleReminder();
+      document.getElementById('content').insertAdjacentHTML('afterbegin',
+        '<div class="notif-banner" id="notifOk"><div class="n-icon">🔔</div><div class="n-text"><b>Lembretes ativados!</b><br>Você receberá uma notificação todo dia às 20h.</div><button class="n-close" onclick="this.parentElement.remove()">✕</button></div>');
+      setTimeout(()=>{const e=document.getElementById('notifOk');if(e)e.remove()},5000);
+    }
+  });
+}
+function scheduleReminder(){
+  const now=new Date();
+  const reminder=new Date(now);
+  reminder.setHours(20,0,0,0);
+  if(reminder<=now)reminder.setDate(reminder.getDate()+1);
+  const ms=reminder-now;
+  setTimeout(()=>{
+    if(Notification.permission==='granted'){
+      new Notification('🧠 Planner TDAH',{body:'Seu check-in diário está te esperando! Como foi seu dia?',icon:'icon-192.png',tag:'planner-reminder'});
+    }
+    scheduleReminder();
+  },ms);
+}
+
+// ═══ NAVEGAÇÃO ═══
+function buildNav(){
+  const nav=document.getElementById('dayNav');
+  let html='';
+  const today=new Date().getDate();
+  for(let d=1;d<=30;d++){
+    let cls=d===currentDay?'active':'';
+    if(d===today)cls+=' today';
+    html+=`<button class="${cls}" data-action="goToDay" data-day="${d}">${d}${isDayFilled(d)?'<span class="dot"></span>':''}</button>`;
+  }
+  nav.innerHTML=html;
+  const ab=nav.querySelector('.active');if(ab)ab.scrollIntoView({inline:'center',behavior:'smooth'});
+}
+function goToDay(d){save();currentDay=d;localStorage.setItem('planner_tdah_day',d);renderDay();buildNav()}
+function nextDay(){if(currentDay<30)goToDay(currentDay+1)}
+function prevDay(){if(currentDay>1)goToDay(currentDay-1)}
+
+// ═══ RENDER ═══
+function renderDay(){
+  const dd=getDD(currentDay);
+  document.getElementById('dayBadge').textContent=`Dia ${currentDay}`;
+
+  let html='';
+
+  // Micro-metas
+  const metasDone=dd.metasDone.filter(Boolean).length;
+  html+=`<div class="card"><h3><span class="icon">☀️</span> Micro-metas do dia</h3>
+    <div class="help">Escolha até 3 tarefas rápidas. <b>Máximo 15 minutos cada.</b> Marque quando concluir. ✅</div>
+    <div class="counter">${metasDone}/3</div>`;
+  for(let i=0;i<3;i++){
+    const done=dd.metasDone[i];
+    html+=`<div class="meta-item${done?' done':''}">
+      <input type="checkbox" ${done?'checked':''} onchange="toggleMeta(${i},this.checked)">
+      <input type="text" placeholder="${['Ex: Lavar a louça','Ex: Responder 3 emails','Ex: 10 min de leitura'][i]}" value="${esc(dd.metas[i])}" onchange="updateMeta(${i},this.value)">
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Foco
+  html+=`<div class="card"><h3><span class="icon">🔥</span> Foco do Dia</h3>
+    <div class="help"><b>A coisa MAIS importante hoje.</b> Só uma. O que realmente precisa sair?</div>
+    <textarea class="foco-input" placeholder="Ex: Terminar o relatório da faculdade" onchange="updateFoco(this.value)">${esc(dd.foco)}</textarea></div>`;
+
+  // Energia
+  html+=`<div class="card"><h3><span class="icon">⚡</span> Como está sua energia?</h3>
+    <div class="help">Toque no número para cada período. 1 = esgotado(a), 5 = no pico.</div>
+    <div class="energy-row">`;
+  [{key:'manha',label:'Manhã ☀️'},{key:'tarde',label:'Tarde 🌤️'},{key:'noite',label:'Noite 🌙'}].forEach(p=>{
+    html+=`<div class="energy-col"><label>${p.label}</label><div class="energy-btns">`;
+    for(let v=1;v<=5;v++){
+      html+=`<button class="energy-btn${dd.energia[p.key]===v?' sel':''}" data-action="setEnergia" data-key="${p.key}" data-val="${v}">${v}</button>`;
+    }
+    html+=`</div></div>`;
+  });
+  html+=`</div></div>`;
+
+  // Notas
+  html+=`<div class="card"><h3><span class="icon">📝</span> Anotações do dia</h3>
+    <div class="help">Pensamentos soltos, ideias que surgiram, algo que te incomodou. <b>Sem filtro.</b></div>
+    <textarea class="notas-input" placeholder="Escreva o que vier à cabeça..." onchange="updateNotas(this.value)">${esc(dd.notas)}</textarea></div>`;
+
+  // Conquistas
+  const conqDone=dd.conquistasDone.filter(Boolean).length;
+  html+=`<div class="card"><h3><span class="icon">✅</span> Hoje eu consegui...</h3>
+    <div class="help">Celebre o que deu certo. <b>Não importa se foi pequeno.</b> Toque na bolinha para marcar.</div>
+    <div class="counter">${conqDone}/3</div>`;
+  for(let i=0;i<3;i++){
+    html+=`<div class="conq-item${dd.conquistasDone[i]?' done':''}" data-action="toggleConq" data-idx="${i}">
+      <div class="conq-dot"></div>
+      <input type="text" placeholder="${['Ex: Tomei café da manhã','Ex: Fiz uma caminhada','Ex: Consegui me concentrar'][i]}" value="${esc(dd.conquistas[i])}" onchange="updateConq(${i},this.value)" onclick="event.stopPropagation()">
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Revisão
+  if(currentDay%5===0){
+    const rk=`review_${currentDay}`;
+    if(!data[rk])data[rk]={funcionou:'',melhorar:'',energia:0,satisfacao:0};
+    const rd=data[rk];
+    html+=`<div class="card"><h3><span class="icon">✨</span> Revisão da Semana</h3>
+      <div class="help">Olhe para os últimos 5 dias. O que funcionou? O que pode melhorar?</div>
+      <div class="review-section"><h4>✅ O que funcionou:</h4>
+        <textarea class="review-input" placeholder="O que deu certo essa semana?" onchange="updateReview('funcionou',this.value)">${esc(rd.funcionou)}</textarea></div>
+      <div class="review-section"><h4>🔧 O que melhorar:</h4>
+        <textarea class="review-input" placeholder="O que posso fazer diferente?" onchange="updateReview('melhorar',this.value)">${esc(rd.melhorar)}</textarea></div>
+      <p style="font-size:12px;font-weight:600;color:var(--text2);text-align:center;margin-top:8px">
+        Energia: ${rd.energia?'⭐'.repeat(rd.energia):'—'} &nbsp;|&nbsp; Satisfação: ${rd.satisfacao?'💚'.repeat(rd.satisfacao):'—'}
+      </p>
+      <div style="display:flex;gap:5px;margin-top:8px"><span style="font-size:12px;color:var(--text2)">⚡</span>${[1,2,3,4,5].map(v=>`<button style="flex:1;padding:7px;border-radius:10px;border:1.5px solid var(--border);background:${rd.energia===v?'var(--purple)':'var(--bg)'};color:${rd.energia===v?'white':'var(--text2)'};cursor:pointer;font-size:12px;font-weight:700" data-action="updateReview" data-field="energia" data-val="${v}">${v}</button>`).join('')}</div>
+      <div style="display:flex;gap:5px;margin-top:4px"><span style="font-size:12px;color:var(--text2)">💚</span>${[1,2,3,4,5].map(v=>`<button style="flex:1;padding:7px;border-radius:10px;border:1.5px solid var(--border);background:${rd.satisfacao===v?'var(--green)':'var(--bg)'};color:${rd.satisfacao===v?'white':'var(--text2)'};cursor:pointer;font-size:12px;font-weight:700" data-action="updateReview" data-field="satisfacao" data-val="${v}">${v}</button>`).join('')}</div></div>`;
+  }
+
+  // Celebração
+  if(currentDay===30){
+    const cel=data['celebracao']||{conquista:'',aprendizado:'',meta:''};
+    html+=`<div class="card celebracao">
+      <div class="trophy">🏆</div><h2>30 Dias Completos!</h2>
+      <p class="msg">Não importa quantos foram 'perfeitos'.<br>Você apareceu. Você tentou. Isso é o que importa.</p>
+      <div class="review-section" style="text-align:left"><h4>Minha maior conquista:</h4><textarea class="review-input" placeholder="O que mais me orgulha este mês..." onchange="updateCel('conquista',this.value)">${esc(cel.conquista)}</textarea></div>
+      <div class="review-section" style="text-align:left"><h4>O que aprendi sobre mim:</h4><textarea class="review-input" placeholder="Uma descoberta sobre como eu funciono..." onchange="updateCel('aprendizado',this.value)">${esc(cel.aprendizado)}</textarea></div>
+      <div class="review-section" style="text-align:left"><h4>Meta para o próximo mês:</h4><textarea class="review-input" placeholder="O que quero alcançar..." onchange="updateCel('meta',this.value)">${esc(cel.meta)}</textarea></div>
+      <p style="margin-top:16px;color:var(--red);font-weight:600;font-size:15px">TDAH não é defeito. É um jeito diferente de processar o mundo. 💙</p></div>`;
+  }
+
+  document.getElementById('content').innerHTML=html;
+  buildNav();
+}
+
+// ═══ UPDATE FUNCTIONS ═══
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function updateMeta(i,v){getDD(currentDay).metas[i]=v;save()}
+function toggleMeta(i,c){getDD(currentDay).metasDone[i]=c;save();renderDay()}
+function updateFoco(v){getDD(currentDay).foco=v;save()}
+function updateNotas(v){getDD(currentDay).notas=v;save()}
+function setEnergia(p,v){getDD(currentDay).energia[p]=v;save();renderDay()}
+function updateConq(i,v){getDD(currentDay).conquistas[i]=v;save()}
+function toggleConq(i){const dd=getDD(currentDay);dd.conquistasDone[i]=!dd.conquistasDone[i];save();renderDay()}
+function updateReview(f,v){const k=`review_${currentDay}`;if(!data[k])data[k]={funcionou:'',melhorar:'',energia:0,satisfacao:0};data[k][f]=v;save();renderDay()}
+function updateCel(f,v){if(!data['celebracao'])data['celebracao']={conquista:'',aprendizado:'',meta:''};data['celebracao'][f]=v;save()}
+
+// ═══ INIT ═══
+function initApp(){
+  if(!localStorage.getItem('planner_tdah_onboarded'))showOnboarding();
+  renderDay();updateProgress();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+  if(Notification.permission==='granted')scheduleReminder();
+}
+</script>
+</body>
+</html>
