@@ -3,68 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ami · Projetos</title>
+<title>Órbita · Planner TDAH</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box }
   body { 
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0f172a; color: #e2e8f0; min-height:100vh;
+    background: #0b1210; color: #e8efe9; min-height:100vh;
     display:flex; flex-direction:column; align-items:center;
     padding: 2rem 1rem;
   }
   header { text-align:center; margin-bottom:3rem }
-  h1 { font-size:2.5rem; color:#f1f5f9; margin-bottom:.5rem }
-  h1 span { color:#a78bfa }
-  .subtitle { color:#94a3b8; font-size:1.1rem }
+  h1 { font-size:2.5rem; color:#e8efe9; margin-bottom:.5rem }
+  h1 span { color:#5eead4 }
+  .subtitle { color:#889c91; font-size:1.1rem }
   .grid { 
     display:grid; gap:1.5rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     max-width:900px; width:100%
   }
   .card {
-    background:#1e293b; border-radius:16px; padding:1.75rem;
-    border:1px solid #334155; transition: all .2s
+    background:#141c19; border-radius:16px; padding:1.75rem;
+    border:1px solid #1e2b26; transition: all .2s
   }
-  .card:hover { border-color:#818cf8; transform:translateY(-2px) }
-  .card h2 { font-size:1.3rem; color:#e2e8f0; margin-bottom:.5rem }
-  .card p { color:#94a3b8; line-height:1.6; font-size:.95rem; margin-bottom:1rem }
+  .card:hover { border-color:#5eead4; transform:translateY(-2px) }
+  .card h2 { font-size:1.3rem; color:#e8efe9; margin-bottom:.5rem }
+  .card p { color:#889c91; line-height:1.6; font-size:.95rem; margin-bottom:1rem }
   .card .tag {
-    display:inline-block; background:#334155; color:#c4b5fd;
+    display:inline-block; background:#1e2b26; color:#5eead4;
     padding:.25rem .6rem; border-radius:6px; font-size:.8rem; margin-right:.4rem; margin-bottom:.4rem
   }
-  .card a {
-    display:inline-block; margin-top:.5rem; color:#818cf8; text-decoration:none;
-    font-weight:600; font-size:.95rem
-  }
+  .card a { display:inline-block; margin-top:.5rem; color:#5eead4; text-decoration:none; font-weight:600; font-size:.95rem }
   .card a:after { content:' →' }
-  footer { margin-top:3rem; color:#475569; font-size:.85rem; text-align:center }
+  .card .links { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.5rem }
+  .card .links a { font-size:.85rem; color:#a78bfa }
+  .card .links a:after { content:'' }
+  footer { margin-top:3rem; color:#1e2b26; font-size:.85rem; text-align:center }
 </style>
 </head>
 <body>
-
 <header>
-  <h1>Ami <span>·</span> Projetos</h1>
-  <p class="subtitle">Workspace de experimentos e produtos digitais</p>
+  <h1>🌀 Órbita <span>·</span> Planner TDAH</h1>
+  <p class="subtitle">Seu ritmo. Sua órbita.</p>
 </header>
-
 <div class="grid">
-  <div class="card">
-    <h2>🧠 Planner TDAH Neuro</h2>
-    <p>PWA com timer visual, contextos adaptativos, analytics de humor e dicas baseadas em ciência. CBT/DBT integrado.</p>
-    <span class="tag">PWA</span><span class="tag">TDAH</span><span class="tag">Neurociência</span>
-    <br>
-    <a href="./planner-tdah/">Abrir planner →</a>
+  <div class="card" style="border-color:#5eead4">
+    <h2>🌀 Órbita v4</h2>
+    <p>Session-based, tarefas sequenciais, timer com proteção anti-hiperfoco, ciclo menstrual, companheirismo, espiral de progresso. Demo gratuita.</p>
+    <span class="tag">NOVO</span><span class="tag">PWA</span><span class="tag">TDAH</span><span class="tag">Neuro</span>
+    <br><a href="./orbita.html">Abrir Órbita →</a>
   </div>
-
   <div class="card">
-    <h2>🚀 Em breve</h2>
-    <p>Novos projetos aparecem aqui conforme forem criados.</p>
-    <span class="tag">WIP</span>
+    <h2>🧠 Planner TDAH v3</h2>
+    <p>Versão anterior com timer visual, contextos adaptativos, analytics e dicas científicas.</p>
+    <span class="tag">PWA</span><span class="tag">TDAH</span><span class="tag">v3</span>
+    <br><a href="./tdah.html">Abrir v3 →</a>
+  </div>
+  <div class="card">
+    <h2>🎨 Landing Pages</h2>
+    <p>Páginas personalizadas por persona. Identidade Órbita. R$47 vitalício.</p>
+    <span class="tag">Marketing</span><span class="tag">Conversão</span>
+    <br><div class="links"><a href="./marina.html">Marina</a><a href="./rafael.html">Rafael</a><a href="./jessica.html">Jéssica</a></div>
   </div>
 </div>
-
-<footer>
-  Feito pela Ami · hospedado no GitHub Pages
-</footer>
-
+<footer>Órbita · Seu ritmo. Sua órbita.</footer>
 </body>
 </html>
