@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Planner TDAH</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 20px;
+  -webkit-tap-highlight-color: transparent;
+}
+h1{font-size:26px;color:#60a5fa;text-align:center;margin-bottom:12px}
+p{color:#94a3b8;text-align:center;font-size:15px;line-height:1.7;margin-bottom:20px}
+input{
+  width:100%;padding:16px;background:#1e293b;border:2px solid #334155;
+  border-radius:14px;color:#f1f5f9;font-size:20px;text-align:center;
+  letter-spacing:3px;outline:none;font-weight:700;margin-bottom:14px;
+}
+input:focus{border-color:#60a5fa}
+button{
+  width:100%;padding:16px;background:#2563eb;color:#ffffff;
+  border:none;border-radius:14px;font-size:18px;font-weight:700;
+  cursor:pointer;
+}
+button:active{opacity:.8}
+.error{color:#f87171;text-align:center;font-size:14px;margin-top:12px;font-weight:600}
+</style>
+</head>
+<body>
+
+<div id="tela">
+  <h1>🧠 Planner TDAH</h1>
+  <p>30 dias de organização para quem tem<br>déficit de atenção. <b>Sem culpa.</b></p>
+  <p>🔑 Digite seu código:</p>
+  <input type="text" id="code" placeholder="TDAH2026" autocomplete="off">
+  <button onclick="ativar()">Começar Agora</button>
+  <div class="error" id="error"></div>
+</div>
+
+<script>
+var CODIGOS = ['TDAH2026','PLANNER30','FOCO2026','MENTE2026','ATIVA123'];
+function ativar(){
+  var c = document.getElementById('code').value.trim().toUpperCase();
+  if(CODIGOS.indexOf(c) >= 0 || CODIGOS.indexOf(c.replace('-','')) >= 0){
+    localStorage.setItem('planner_tdah_activated','true');
+    window.location.href = '/app/planner-tdah/tdah.html';
+  }else{
+    document.getElementById('error').innerText = 'Código inválido';
+  }
+}
+</script>
+
+</body>
+</html>

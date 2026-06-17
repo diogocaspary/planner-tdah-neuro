@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Planner TDAH · App</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background: #0f172a;
+  color: #f1f5f9;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 20px;
+  -webkit-tap-highlight-color: transparent;
+}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 0 16px;border-bottom:2px solid #334155;margin-bottom:12px}
+header h1{font-size:20px;font-weight:800;color:#60a5fa}
+.badge{background:#1e293b;padding:8px 16px;border-radius:20px;font-size:14px;font-weight:700;color:#94a3b8;border:1px solid #334155}
+nav{display:flex;gap:5px;overflow-x:auto;padding:10px 0;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex-shrink:0;width:36px;height:36px;border-radius:18px;border:1.5px solid #334155;background:#1e293b;color:#f1f5f9;font-size:13px;font-weight:700;cursor:pointer}
+nav button.active{background:#2563eb;border-color:#2563eb;color:#fff}
+nav button.done{position:relative}
+nav button.done::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:3px;background:#4ade80}
+.card{background:#1e293b;border:1.5px solid #334155;border-radius:18px;padding:18px;margin-bottom:14px;position:relative}
+.card h3{font-size:16px;font-weight:700;margin-bottom:4px;color:#f1f5f9}
+.card .help{font-size:13px;color:#94a3b8;margin-bottom:12px;line-height:1.6}
+.card .help b{color:#f1f5f9}
+.counter{position:absolute;top:14px;right:16px;font-size:12px;font-weight:700;color:#94a3b8}
+.meta-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #334155}
+.meta-item:last-child{border-bottom:none}
+.meta-item input[type="text"]{flex:1;background:transparent;border:none;color:#f1f5f9;font-size:16px;outline:none;font-family:inherit}
+.meta-item input[type="text"]::placeholder{color:#94a3b8;font-size:14px}
+.meta-item input[type="checkbox"]{appearance:none;width:28px;height:28px;border:2px solid #334155;border-radius:8px;cursor:pointer;flex-shrink:0;background:#0f172a}
+.meta-item input[type="checkbox"]:checked{background:#4ade80;border-color:#4ade80}
+.meta-item input[type="checkbox"]:checked::after{content:'✓';display:block;text-align:center;color:#0f172a;font-size:16px;font-weight:bold;line-height:24px}
+.meta-item.done input[type="text"]{text-decoration:line-through;color:#64748b}
+.foco-input,.notas-input{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:12px;padding:14px;color:#f1f5f9;font-size:16px;outline:none;resize:none;font-family:inherit}
+.foco-input{min-height:56px}
+.notas-input{min-height:72px;resize:vertical}
+.foco-input:focus,.notas-input:focus{border-color:#60a5fa}
+.foco-input::placeholder,.notas-input::placeholder{color:#94a3b8;font-size:14px}
+.energy-row{display:flex;justify-content:space-between;gap:8px}
+.energy-col{flex:1;text-align:center}
+.energy-col label{font-size:12px;font-weight:600;color:#94a3b8;display:block;margin-bottom:8px}
+.energy-btns{display:flex;justify-content:center;gap:3px}
+.energy-btn{width:32px;height:32px;border-radius:16px;border:1.5px solid #334155;background:#0f172a;color:#94a3b8;font-size:13px;cursor:pointer;font-weight:700}
+.energy-btn.sel{background:#a78bfa;border-color:#a78bfa;color:#fff}
+.conq-item{display:flex;align-items:center;gap:12px;padding:8px 0;cursor:pointer}
+.conq-item input[type="text"]{flex:1;background:transparent;border:none;color:#f1f5f9;font-size:15px;outline:none;font-family:inherit}
+.conq-item input[type="text"]::placeholder{color:#94a3b8;font-size:13px}
+.conq-dot{width:14px;height:14px;border-radius:7px;border:2px solid #334155;background:#0f172a;flex-shrink:0;transition:all .2s}
+.conq-item.done .conq-dot{background:#4ade80;border-color:#4ade80}
+.conq-item.done input[type="text"]{text-decoration:line-through;color:#64748b}
+.bottom-bar{position:sticky;bottom:0;background:#0f172a;padding:14px 0;border-top:2px solid #334155;display:flex;justify-content:space-between;gap:10px;z-index:100}
+.bottom-bar button{flex:1;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:700;cursor:pointer}
+.btn-prev{background:#1e293b!important;color:#f1f5f9!important;border:1.5px solid #334155!important}
+.btn-next{background:#2563eb!important;color:#fff!important}
+.progress-bar{height:6px;background:#334155;border-radius:3px;margin:8px 0 14px;overflow:hidden}
+.progress-fill{height:100%;background:#4ade80;border-radius:3px;transition:width .5s}
+.progress-label{font-size:12px;font-weight:600;color:#94a3b8;text-align:center;margin-bottom:8px}
+.toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#4ade80;color:#0f172a;padding:12px 28px;border-radius:24px;font-size:14px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.footer-info{text-align:center;padding:24px 0;color:#94a3b8;font-size:12px;line-height:2}
+.footer-info button{background:none;border:none;color:#60a5fa;font-size:12px;font-weight:600;text-decoration:underline;cursor:pointer;font-family:inherit}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧠 Meu Planner</h1>
+  <div class="badge" id="dayBadge">Dia 1</div>
+</header>
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<div class="progress-label" id="progressLabel">Nenhum dia preenchido ainda</div>
+<nav id="dayNav"></nav>
+<div id="content"></div>
+<div class="footer-info">
+  💡 <b>Dica:</b> Preencha pelo menos o Foco do Dia.
+</div>
+<div class="bottom-bar">
+  <button class="btn-prev" onclick="prevDay()">◀ Dia anterior</button>
+  <button class="btn-next" onclick="nextDay()">Próximo dia ▶</button>
+</div>
+<div class="toast" id="toast">💾 Salvo!</div>
+
+<script>
+var currentDay = parseInt(localStorage.getItem('planner_tdah_day') || '1');
+var data = JSON.parse(localStorage.getItem('planner_tdah_data') || '{}');
+var currentDay = parseInt(localStorage.getItem('planner_tdah_day') || '1');
+
+function save(){
+  localStorage.setItem('planner_tdah_data', JSON.stringify(data));
+  localStorage.setItem('planner_tdah_day', String(currentDay));
+  updateProgress();
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 1200);
+}
+
+function getDD(d){
+  var k = 'day_' + d;
+  if (!data[k]) {
+    data[k] = {
+      metas: ['','',''],
+      metasDone: [false,false,false],
+      foco: '',
+      notas: '',
+      energia: {manha:0, tarde:0, noite:0},
+      conquistas: ['','',''],
+      conquistasDone: [false,false,false]
+    };
+  }
+  return data[k];
+}
+
+function isDayFilled(d){
+  var dd = getDD(d);
+  return dd.metas.some(function(m){ return m; }) || dd.foco || dd.conquistas.some(function(c){ return c; }) || dd.notas;
+}
+
+function updateProgress(){
+  var filled = 0;
+  for (var d = 1; d <= 30; d++) { if (isDayFilled(d)) filled++; }
+  var pct = Math.round(filled / 30 * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = pct === 0 ? 'Nenhum dia preenchido ainda' : filled + ' de 30 dias preenchidos (' + pct + '%)';
+}
+
+function esc(s){
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function buildNav(){
+  var nav = document.getElementById('dayNav');
+  var today = new Date().getDate();
+  var html = '';
+  for (var d = 1; d <= 30; d++) {
+    var cls = d === currentDay ? 'active' : '';
+    if (d === today) cls += ' today';
+    if (isDayFilled(d)) cls += ' done';
+    html += '<button class="' + cls + '" onclick="goToDay(' + d + ')">' + d + '</button>';
+  }
+  nav.innerHTML = html;
+}
+
+function goToDay(d){
+  save();
+  currentDay = d;
+  localStorage.setItem('planner_tdah_day', String(d));
+  renderDay();
+  buildNav();
+}
+
+function nextDay(){ if (currentDay < 30) goToDay(currentDay + 1); }
+function prevDay(){ if (currentDay > 1) goToDay(currentDay - 1); }
+
+function renderDay(){
+  var dd = getDD(currentDay);
+  document.getElementById('dayBadge').textContent = 'Dia ' + currentDay;
+
+  var metasDone = dd.metasDone.filter(Boolean).length;
+  var html = '<div class="card"><h3>☀️ Micro-metas do dia</h3>' +
+    '<div class="help">Escolha até 3 tarefas rápidas. <b>Máximo 15 minutos cada.</b> Marque quando concluir. ✅</div>' +
+    '<div class="counter">' + metasDone + '/3</div>';
+
+  for (var i = 0; i < 3; i++) {
+    var done = dd.metasDone[i];
+    var ph = ['Ex: Lavar a louça', 'Ex: Responder 3 emails', 'Ex: 10 min de leitura'][i];
+    html += '<div class="meta-item' + (done ? ' done' : '') + '">' +
+      '<input type="checkbox" ' + (done ? 'checked' : '') + ' onchange="toggleMeta(' + i + ',this.checked)">' +
+      '<input type="text" placeholder="' + ph + '" value="' + esc(dd.metas[i]) + '" onchange="updateMeta(' + i + ',this.value)">' +
+      '</div>';
+  }
+  html += '</div>';
+
+  html += '<div class="card"><h3>🔥 Foco do Dia</h3>' +
+    '<div class="help"><b>A coisa MAIS importante hoje.</b> Só uma.</div>' +
+    '<textarea class="foco-input" placeholder="Ex: Terminar o relatório da faculdade" onchange="updateFoco(this.value)">' + esc(dd.foco) + '</textarea></div>';
+
+  html += '<div class="card"><h3>⚡ Como está sua energia?</h3>' +
+    '<div class="help">Toque no número. 1 = esgotado, 5 = no pico.</div><div class="energy-row">';
+  var periodos = [{key:'manha',label:'Manhã ☀️'},{key:'tarde',label:'Tarde 🌤️'},{key:'noite',label:'Noite 🌙'}];
+  for (var p = 0; p < periodos.length; p++) {
+    var pk = periodos[p];
+    html += '<div class="energy-col"><label>' + pk.label + '</label><div class="energy-btns">';
+    for (var v = 1; v <= 5; v++) {
+      html += '<button class="energy-btn' + (dd.energia[pk.key] === v ? ' sel' : '') + '" onclick="setEnergia(\'' + pk.key + '\',' + v + ')">' + v + '</button>';
+    }
+    html += '</div></div>';
+  }
+  html += '</div></div>';
+
+  html += '<div class="card"><h3>📝 Anotações do dia</h3>' +
+    '<div class="help">Pensamentos soltos, ideias. <b>Sem filtro.</b></div>' +
+    '<textarea class="notas-input" placeholder="Escreva o que vier à cabeça..." onchange="updateNotas(this.value)">' + esc(dd.notas) + '</textarea></div>';
+
+  var conqDone = dd.conquistasDone.filter(Boolean).length;
+  html += '<div class="card"><h3>✅ Hoje eu consegui...</h3>' +
+    '<div class="help">Celebre o que deu certo. <b>Não importa o tamanho.</b></div>' +
+    '<div class="counter">' + conqDone + '/3</div>';
+  for (var i = 0; i < 3; i++) {
+    var cph = ['Ex: Tomei café da manhã', 'Ex: Fiz uma caminhada', 'Ex: Consegui me concentrar'][i];
+    html += '<div class="conq-item' + (dd.conquistasDone[i] ? ' done' : '') + '" onclick="toggleConq(' + i + ')">' +
+      '<div class="conq-dot"></div>' +
+      '<input type="text" placeholder="' + cph + '" value="' + esc(dd.conquistas[i]) + '" onchange="updateConq(' + i + ',this.value)" onclick="event.stopPropagation()">' +
+      '</div>';
+  }
+  html += '</div>';
+
+  document.getElementById('content').innerHTML = html;
+  buildNav();
+}
+
+function updateMeta(i, v){ getDD(currentDay).metas[i] = v; save(); }
+function toggleMeta(i, c){ getDD(currentDay).metasDone[i] = c; save(); renderDay(); }
+function updateFoco(v){ getDD(currentDay).foco = v; save(); }
+function updateNotas(v){ getDD(currentDay).notas = v; save(); }
+function setEnergia(p, v){ getDD(currentDay).energia[p] = v; save(); renderDay(); }
+function updateConq(i, v){ getDD(currentDay).conquistas[i] = v; save(); }
+function toggleConq(i){ var dd = getDD(currentDay); dd.conquistasDone[i] = !dd.conquistasDone[i]; save(); renderDay(); }
+
+function initApp(){
+  renderDay();
+  updateProgress();
+}
+
+initApp();
+</script>
+
+</body>
+</html>
