@@ -241,6 +241,26 @@ header .badge.premium{color:var(--accent);border-color:var(--accent)}
 .stop-card h3{color:var(--warning)}
 .stop-card .help{color:var(--warning)}
 
+/* ── PWA INSTALL ── */
+.install-banner{
+  display:none;position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  width:calc(100% - 32px);max-width:448px;background:var(--bg-card);
+  border:2px solid var(--accent);border-radius:18px;padding:16px;z-index:950;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);flex-direction:column;gap:12px
+}
+.install-banner .ib-top{display:flex;align-items:center;gap:12px}
+.install-banner .ib-icon{font-size:36px}
+.install-banner .ib-text{flex:1}
+.install-banner .ib-text strong{color:var(--accent);font-size:.88rem}
+.install-banner .ib-text span{color:var(--text-dim);font-size:.75rem;display:block;margin-top:2px}
+.install-banner .ib-btns{display:flex;gap:8px}
+.install-banner .ib-btns button{flex:1;padding:10px;border-radius:12px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+.ib-instalar{background:var(--accent);color:#0b1210}
+.ib-fechar{background:transparent;color:var(--text-dim)}
+
+/* ── TIMER LABEL ── */
+.timer-label{font-size:.72rem;color:var(--text-dim);margin-top:2px}
+
 /* ── CONTEXTO ── */
 .ctx-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
 .ctx-card{
@@ -343,6 +363,7 @@ header .badge.premium{color:var(--accent);border-color:var(--accent)}
       <svg viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="timerFg" cx="60" cy="60" r="52" stroke-dasharray="326.73" stroke-dashoffset="0"/></svg>
       <div class="timer-time" id="timerDisplay">10:00</div>
     </div>
+    <div class="timer-label" id="timerLabel">Timer Pomodoro (10 min)</div>
     <div class="timer-companion" id="timerCompanion">Pronta(o) para começar? 🌿</div>
     <div class="timer-btns">
       <button onclick="setTimer(5)">5 min</button>
@@ -370,6 +391,7 @@ header .badge.premium{color:var(--accent);border-color:var(--accent)}
   <!-- Bottom Bar -->
   <div class="bottom-bar" id="bottomBar">
     <button class="sel" id="navPlanner" onclick="renderPlanner()"><span class="nav-emoji">📋</span>Planner</button>
+    <button id="navModo" onclick="showModo()"><span class="nav-emoji">⚡</span>Modo</button>
     <button id="navDicas" onclick="showDicas()"><span class="nav-emoji">🧠</span>Dicas</button>
     <button id="navRotina" onclick="showRotina()"><span class="nav-emoji">🌅</span>Rotina</button>
     <button id="navStats" onclick="showAnalytics()"><span class="nav-emoji">📊</span>Stats</button>
@@ -397,6 +419,18 @@ header .badge.premium{color:var(--accent);border-color:var(--accent)}
 </div>
 
 <div class="toast" id="toast">💾 Salvo!</div>
+
+<!-- PWA Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div class="ib-top">
+    <div class="ib-icon">🌀</div>
+    <div class="ib-text"><strong>Instale o Órbita</strong><span>Use como app no celular. Sem abrir o navegador.</span></div>
+  </div>
+  <div class="ib-btns">
+    <button class="ib-fechar" onclick="fecharInstall()">Depois</button>
+    <button class="ib-instalar" id="btnInstall" onclick="instalarApp()">Instalar Agora</button>
+  </div>
+</div>
 
 <script>
 // ═══ CONSTANTS ═══
@@ -611,7 +645,7 @@ function initApp(){
 }
 
 // ═══ TIMER ═══
-function setTimer(min){TIMER_TOT=min*60;TIMER_SEG=0;TIMER_25_ALERT=0;document.getElementById('timerDisplay').textContent=min+':00';var btns=document.querySelectorAll('.timer-btns button:not(.run)');for(var i=0;i<btns.length;i++){btns[i].classList.remove('sel');if(btns[i].textContent.trim().startsWith(String(min)))btns[i].classList.add('sel');}}
+function setTimer(min){TIMER_TOT=min*60;TIMER_SEG=0;TIMER_25_ALERT=0;document.getElementById('timerDisplay').textContent=min+':00';document.getElementById('timerLabel').textContent='Timer Pomodoro ('+min+' min)';var btns=document.querySelectorAll('.timer-btns button:not(.run)');for(var i=0;i<btns.length;i++){btns[i].classList.remove('sel');if(btns[i].textContent.trim().startsWith(String(min)))btns[i].classList.add('sel');}}
 function toggleTimer(){if(TIMER_INT||TIMER_PAUSA){pararTudo();return;}iniciarTimer();}
 function iniciarTimer(){
   var btn=document.getElementById('btnTimer');btn.textContent='⏸ Pausar';btn.classList.add('paused');
@@ -679,7 +713,6 @@ function renderPlanner(){
     document.getElementById('content').innerHTML=h;
     return;
   }
-  if(!dd)dd=getDD();
 
   // Só 5 Minutos
   h+='<button class="btn-5min" onclick="modo5min()">⏱️ Só 5 Minutos — Não pense, só faça</button>';
@@ -717,6 +750,12 @@ function renderPlanner(){
   h+='<div class="card"><h3>✅ Hoje eu consegui...</h3><div class="help">Celebre <b>qualquer vitória</b>. Dopamina importa.</div><div style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px">'+cd+'/3</div>';
   for(var i=0;i<3;i++){h+='<div class="conq-item'+(dd.conqDone[i]?' feito':'')+'" onclick="togConq('+i+')"><div class="conq-dot"></div><input type="text" placeholder="'+['Ex: Levantei da cama','Ex: Tomei água','Ex: Fiz 5 min'][i]+'" value="'+esc(dd.conq[i])+'" onchange="updConq('+i+',this.value)" onclick="event.stopPropagation()"></div>';}
   h+='</div>';
+
+  // Review Semanal (cada 5 sessões)
+  var numSes=SES.length;
+  if(numSes>0&&numSes%5===0&&!dd.reviewFeita){
+    h+='<div class="card" style="border-color:var(--accent-2)"><h3>✨ Revisão da Semana</h3><div class="help">'+numSes+' sessões! Sem julgamento.</div><p style="font-size:.78rem;font-weight:600;color:var(--accent-2);margin-bottom:6px">✅ O que funcionou:</p><textarea class="brain-input" placeholder="O que deu certo?" onchange="updReview(\'bom\',this.value)">'+esc(dd.reviewBom||'')+'</textarea><p style="font-size:.78rem;font-weight:600;color:var(--accent-2);margin-bottom:6px">🔧 O que ajustar:</p><textarea class="brain-input" placeholder="O que posso fazer diferente?" onchange="updReview(\'melhorar\',this.value)">'+esc(dd.reviewMelhorar||'')+'</textarea></div>';
+  }
 
   document.getElementById('content').innerHTML=h;
 }
@@ -758,9 +797,23 @@ function showAnalytics(){
   document.getElementById('content').innerHTML=h;
 }
 
+// ═══ MODO ═══
+function showModo(){
+  setNav('modo');
+  var h='<div class="card"><h3>⚡ Escolha o Modo</h3><div class="help">Cada modo ativa uma técnica científica.</div>';
+  h+='<button class="btn-5min" onclick="modo5min()">⏱️ Só 5 Minutos</button>';
+  h+='<button class="btn btn-teal btn-sm" style="margin-bottom:8px" onclick="brainDumpModo()">🧹 Brain Dump</button>';
+  h+='<button class="btn btn-sm" style="background:var(--warning);color:#0b1210;margin-bottom:8px" onclick="stopModo()">🛑 STOP — Regulação</button>';
+  h+='<button class="btn btn-sm" style="background:var(--accent-2);color:#fff;margin-bottom:8px" onclick="showScreen(\'settings\')">🎯 Mudar contexto</button>';
+  h+='<button class="btn btn-ghost btn-sm" onclick="renderPlanner()">← Voltar</button></div>';
+  document.getElementById('content').innerHTML=h;
+}
+function brainDumpModo(){renderPlanner();setTimeout(function(){var b=document.querySelector('.brain-input');if(b){b.focus();b.scrollIntoView();}},300);}
+function stopModo(){alert('🛑 STOP\n\nS — Pare o que está fazendo\nT — Take a breath (respire 3x)\nO — Observe seus sentimentos\nP — Proceed (prossiga com gentileza)\n\nVocê não é seus pensamentos. Eles passam.');}
+
 // ═══ NAV ═══
 function setNav(active){
-  ['planner','dicas','rotina','stats'].forEach(function(k){
+  ['planner','modo','dicas','rotina','stats'].forEach(function(k){
     var btn=document.getElementById('nav'+k.charAt(0).toUpperCase()+k.slice(1));
     if(!btn)return;
     if(k===active)btn.classList.add('sel');else btn.classList.remove('sel');
@@ -823,13 +876,26 @@ function updConq(i,v){getDD().conq[i]=v;salvar();}
 function togConq(i){var dd=getDD();dd.conqDone[i]=!dd.conqDone[i];salvar();if(dd.conqDone[i])celebrar();renderPlanner();}
 function togRotinaM(i){var dd=getDD();dd.rotinaM[i]=!dd.rotinaM[i];salvar();if(dd.rotinaM[i])celebrar();showRotina();}
 function togRotinaN(i){var dd=getDD();dd.rotinaN[i]=!dd.rotinaN[i];salvar();if(dd.rotinaN[i])celebrar();showRotina();}
-function updateStats(){if(!PREMIUM)return;/* analytics are rendered on demand */}
+function updReview(f,v){var dd=getDD();dd['review'+(f==='bom'?'Bom':'Melhorar')]=v;salvar();}
+function updateStats(){if(!PREMIUM)return;}
 
 // ═══ UTILS ═══
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},1500);}
 function celebrar(){var emojis=['🎉','🌟','💪','🔥','✨','🏆','💙','🦋'];var e=emojis[Math.floor(Math.random()*emojis.length)],el=document.createElement('div');el.className='confete';el.textContent=e;document.body.appendChild(el);setTimeout(function(){el.remove()},700);}
 function resetPlanner(){if(confirm('Apagar todos os dados?')){Object.keys(localStorage).filter(function(k){return k.startsWith(P);}).forEach(function(k){localStorage.removeItem(k);});location.reload();}}
+
+// ═══ PWA ═══
+var pwaEvento;
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();pwaEvento=e;setTimeout(function(){document.getElementById('installBanner').style.display='flex';},2000);});
+if(window.matchMedia('(display-mode: standalone)').matches){setTimeout(function(){var b=document.getElementById('installBanner');if(b)b.style.display='none';},100);}
+function instalarApp(){
+  if(pwaEvento){pwaEvento.prompt();pwaEvento.userChoice.then(function(r){document.getElementById('installBanner').style.display='none';});}
+  else{alert('Toque nos 3 pontinhos do navegador e selecione "Adicionar à tela inicial".');}
+}
+function fecharInstall(){document.getElementById('installBanner').style.display='none';var d=new Date();localStorage.setItem(P+'install_fechado',String(d.getDate()));}
+var ifech=localStorage.getItem(P+'install_fechado');
+if(ifech){var dd=new Date();if(parseInt(ifech)===dd.getDate()){setTimeout(function(){var b=document.getElementById('installBanner');if(b)b.style.display='none';},200);}}
 </script>
 </body>
 </html>
