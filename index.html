@@ -3,67 +3,464 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Órbita · Planner TDAH</title>
+<title>CASDEV — Experiência Surreal de IA</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box }
-  body { 
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #0b1210; color: #e8efe9; min-height:100vh;
-    display:flex; flex-direction:column; align-items:center;
-    padding: 2rem 1rem;
+  :root {
+    --violet:#7C5CFF;--amber:#FFC83D;--amber-soft:#FFE0A3;
+    --dark:#0f1218;--darker:#090a0c;--light:#eef2f6;--muted:#8892a0
   }
-  header { text-align:center; margin-bottom:3rem }
-  h1 { font-size:2.5rem; color:#e8efe9; margin-bottom:.5rem }
-  h1 span { color:#5eead4 }
-  .subtitle { color:#889c91; font-size:1.1rem }
-  .grid { 
-    display:grid; gap:1.5rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    max-width:900px; width:100%
+  body { 
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--darker); color: var(--light); min-height:100vh;
+    overflow-x: hidden; cursor: none;
+  }
+  
+  /* Custom Cursor */
+  .cursor {
+    position: fixed; width: 20px; height: 20px;
+    border: 2px solid var(--amber); border-radius: 50%;
+    pointer-events: none; z-index: 10000;
+    transition: transform 0.1s ease, width 0.3s, height 0.3s;
+    mix-blend-mode: difference;
+  }
+  .cursor-dot {
+    position: fixed; width: 6px; height: 6px;
+    background: var(--amber); border-radius: 50%;
+    pointer-events: none; z-index: 10001;
+  }
+  .cursor.hover { transform: scale(2); width: 40px; height: 40px; background: rgba(255, 200, 61, 0.1); }
+  
+  /* Background Canvas */
+  #neural-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+  
+  /* Hero Section */
+  .hero {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-content { text-align: center; z-index: 10; padding: 20px; }
+  
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--amber); background: rgba(255, 200, 61, 0.08);
+    border: 1px solid rgba(255, 200, 61, 0.22); padding: 7px 14px;
+    border-radius: 30px; backdrop-filter: blur(6px); margin-bottom: 20px;
+  }
+  
+  .h1big {
+    font-size: clamp(40px, 10vw, 100px); line-height: 1; font-weight: 900;
+    letter-spacing: -0.03em; margin: 20px 0;
+    background: linear-gradient(100deg, var(--amber-soft) 0%, var(--amber) 45%, var(--violet) 130%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    background-size: 200% 100%; animation: shimmer 6s linear infinite;
+  }
+  @keyframes shimmer { to { background-position: 200% 0; } }
+  
+  .subh {
+    font-size: clamp(16px, 2.5vw, 22px); color: var(--muted);
+    max-width: 600px; line-height: 1.6; margin: 0 auto 30px;
+  }
+  
+  /* Floating Elements */
+  .floating-element {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 200, 61, 0.3), transparent 60%);
+    filter: blur(20px); animation: float 20s ease-in-out infinite; pointer-events: none;
+  }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(50px, -50px) rotate(90deg); }
+    50% { transform: translate(-30px, 30px) rotate(180deg); }
+    75% { transform: translate(40px, 20px) rotate(270deg); }
+  }
+  
+  /* Cards Section */
+  .cards-section { padding: 100px 20px; position: relative; }
+  .bento-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px; max-width: 1200px; margin: 0 auto;
   }
   .card {
-    background:#141c19; border-radius:16px; padding:1.75rem;
-    border:1px solid #1e2b26; transition: all .2s
+    background: linear-gradient(180deg, rgba(27, 30, 38, 0.85), rgba(21, 23, 28, 0.85));
+    border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px;
+    padding: 30px; position: relative; overflow: hidden;
+    backdrop-filter: blur(14px) saturate(120%);
+    transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), box-shadow 0.5s;
   }
-  .card:hover { border-color:#5eead4; transform:translateY(-2px) }
-  .card h2 { font-size:1.3rem; color:#e8efe9; margin-bottom:.5rem }
-  .card p { color:#889c91; line-height:1.6; font-size:.95rem; margin-bottom:1rem }
-  .card .tag {
-    display:inline-block; background:#1e2b26; color:#5eead4;
-    padding:.25rem .6rem; border-radius:6px; font-size:.8rem; margin-right:.4rem; margin-bottom:.4rem
+  .card::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+    background: linear-gradient(135deg, rgba(255, 200, 61, 0.55), rgba(124, 92, 255, 0.30) 55%, rgba(42, 47, 58, 0.6));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
   }
-  .card a { display:inline-block; margin-top:.5rem; color:#5eead4; text-decoration:none; font-weight:600; font-size:.95rem }
-  .card a:after { content:' →' }
-  .card .links { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.5rem }
-  .card .links a { font-size:.85rem; color:#a78bfa }
-  .card .links a:after { content:'' }
-  footer { margin-top:3rem; color:#1e2b26; font-size:.85rem; text-align:center }
+  .card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 0 0 1px rgba(255, 200, 61, 0.18), 0 18px 60px -12px rgba(255, 200, 61, 0.28);
+  }
+  .card-spot {
+    position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+    background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), rgba(255, 200, 61, 0.10), transparent 60%);
+  }
+  .card:hover .card-spot { opacity: 1; }
+  .card-icon { font-size: 40px; margin-bottom: 15px; }
+  .card h3 { font-size: 22px; margin-bottom: 10px; color: var(--light); }
+  .card p { color: var(--muted); line-height: 1.6; font-size: 15px; }
+  
+  /* Voice Orb */
+  .voice-orb {
+    position: fixed; bottom: 40px; right: 40px; width: 80px; height: 80px;
+    border-radius: 50%; background: radial-gradient(circle at 30% 30%, var(--amber), var(--violet));
+    cursor: pointer; z-index: 1000; display: flex; align-items: center; justify-content: center;
+    font-size: 30px; box-shadow: 0 10px 40px rgba(255, 200, 61, 0.4);
+    transition: transform 0.3s, box-shadow 0.3s; animation: pulse-orb 3s ease-in-out infinite;
+  }
+  .voice-orb:hover { transform: scale(1.1); box-shadow: 0 15px 60px rgba(255, 200, 61, 0.6); }
+  .voice-orb.listening { animation: listening-pulse 0.5s ease-in-out infinite; }
+  @keyframes pulse-orb { 0%, 100% { box-shadow: 0 10px 40px rgba(255, 200, 61, 0.4); } 50% { box-shadow: 0 10px 60px rgba(255, 200, 61, 0.7); } }
+  @keyframes listening-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+  
+  /* Chat Interface */
+  .chat-interface {
+    position: fixed; bottom: 140px; right: 40px; width: 350px; max-height: 400px;
+    background: rgba(27, 30, 38, 0.95); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px; backdrop-filter: blur(20px); z-index: 999;
+    display: none; flex-direction: column; overflow: hidden;
+  }
+  .chat-interface.active { display: flex; animation: slide-up 0.3s ease; }
+  @keyframes slide-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .chat-header { padding: 15px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; }
+  .chat-header h4 { font-size: 14px; color: var(--amber); }
+  .chat-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
+  .chat-messages { flex: 1; padding: 20px; overflow-y: auto; max-height: 300px; }
+  .message { margin-bottom: 15px; padding: 12px 16px; border-radius: 12px; font-size: 14px; line-height: 1.5; }
+  .message.bot { background: rgba(255, 200, 61, 0.1); border: 1px solid rgba(255, 200, 61, 0.2); color: var(--light); }
+  .message.user { background: rgba(124, 92, 255, 0.2); border: 1px solid rgba(124, 92, 255, 0.3); color: var(--light); text-align: right; }
+  
+  /* Scroll Progress */
+  .scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--amber), var(--violet)); z-index: 10000; transition: width 0.1s; }
+  
+  /* Manifesto Section */
+  .manifesto { padding: 100px 20px; position: relative; }
+  .band {
+    position: relative; overflow: hidden; border-radius: 24px; padding: clamp(28px, 5vw, 52px);
+    max-width: 1200px; margin: 0 auto; border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, rgba(27, 30, 38, 0.6), rgba(21, 23, 28, 0.6));
+  }
+  .band::before {
+    content: ''; position: absolute; inset: 0; z-index: -1;
+    background: radial-gradient(60% 50% at 18% 12%, rgba(255, 200, 61, 0.20) 0%, transparent 60%),
+                radial-gradient(55% 55% at 85% 8%, rgba(124, 92, 255, 0.18) 0%, transparent 62%);
+    filter: blur(40px);
+  }
+  .manieye { font-size: 13px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--amber); margin-bottom: 20px; }
+  .maniline { border-left: 3px solid var(--amber); padding-left: 20px; margin-top: 20px; font-size: clamp(18px, 3vw, 24px); color: var(--light); font-weight: 600; line-height: 1.6; }
+  
+  /* Particles */
+  .particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .particle {
+    position: absolute; width: 4px; height: 4px; background: var(--amber);
+    border-radius: 50%; opacity: 0; animation: particle-float 10s ease-in-out infinite;
+  }
+  @keyframes particle-float {
+    0% { opacity: 0; transform: translateY(100vh) scale(0); }
+    10% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; transform: translateY(-100vh) scale(1); }
+  }
+  
+  /* Loader */
+  .loader {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--darker); display: flex; align-items: center; justify-content: center;
+    z-index: 100000; transition: opacity 0.5s, visibility 0.5s;
+  }
+  .loader.hidden { opacity: 0; visibility: hidden; }
+  .loader-content { text-align: center; }
+  .loader-orb {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--amber), var(--violet));
+    animation: loader-pulse 1s ease-in-out infinite; margin: 0 auto 20px;
+  }
+  @keyframes loader-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.2); opacity: 0.7; } }
+  .loader-text { color: var(--muted); font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+  
+  @media (max-width: 768px) {
+    .voice-orb { bottom: 20px; right: 20px; width: 60px; height: 60px; font-size: 24px; }
+    .chat-interface { bottom: 100px; right: 20px; width: calc(100% - 40px); }
+    .cursor, .cursor-dot { display: none; } body { cursor: auto; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>🌀 Órbita <span>·</span> Planner TDAH</h1>
-  <p class="subtitle">Seu ritmo. Sua órbita.</p>
-</header>
-<div class="grid">
-  <div class="card" style="border-color:#5eead4">
-    <h2>🌀 Órbita v4</h2>
-    <p>Session-based, tarefas sequenciais, timer com proteção anti-hiperfoco, ciclo menstrual, companheirismo, espiral de progresso. Demo gratuita.</p>
-    <span class="tag">NOVO</span><span class="tag">PWA</span><span class="tag">TDAH</span><span class="tag">Neuro</span>
-    <br><a href="./orbita.html">Abrir Órbita →</a>
+  <!-- Loading Screen -->
+  <div class="loader" id="loader">
+    <div class="loader-content">
+      <div class="loader-orb"></div>
+      <div class="loader-text">Inicializando Neural Network...</div>
+    </div>
   </div>
-  <div class="card">
-    <h2>🧠 Planner TDAH v3</h2>
-    <p>Versão anterior com timer visual, contextos adaptativos, analytics e dicas científicas.</p>
-    <span class="tag">PWA</span><span class="tag">TDAH</span><span class="tag">v3</span>
-    <br><a href="./tdah.html">Abrir v3 →</a>
+
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursor-dot"></div>
+
+  <!-- Scroll Progress -->
+  <div class="scroll-progress" id="scroll-progress"></div>
+
+  <!-- Background Canvas -->
+  <canvas id="neural-canvas"></canvas>
+
+  <!-- Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="floating-element" style="width: 300px; height: 300px; top: 10%; left: 10%; animation-delay: 0s;"></div>
+    <div class="floating-element" style="width: 200px; height: 200px; top: 60%; right: 10%; animation-delay: -5s;"></div>
+    <div class="floating-element" style="width: 250px; height: 250px; bottom: 20%; left: 20%; animation-delay: -10s;"></div>
+
+    <div class="hero-content">
+      <div class="eyebrow"><span>✦</span> IA Prática para Negócios <span>✦</span></div>
+      <h1 class="h1big" id="dynamic-title">Transforme<br>o Impossível<br>em Realidade</h1>
+      <p class="subh" id="dynamic-subtitle">Notícias de IA, projetos reais, consultoria de automação e materiais grátis para sua PME. Sem hype, sem jargão.</p>
+    </div>
+  </section>
+
+  <!-- Cards Section -->
+  <section class="cards-section">
+    <div class="bento-grid">
+      <div class="card interactive-card">
+        <div class="card-spot"></div>
+        <div class="card-icon">🤖</div>
+        <h3>Automação Inteligente</h3>
+        <p>Soluções de IA que automatizam processos repetitivos e liberam seu tempo para o que realmente importa.</p>
+      </div>
+      <div class="card interactive-card">
+        <div class="card-spot"></div>
+        <div class="card-icon">📰</div>
+        <h3>Notícias de IA</h3>
+        <p>Acompanhe as últimas novidades do mundo da Inteligência Artificial com análise prática e aplicada.</p>
+      </div>
+      <div class="card interactive-card">
+        <div class="card-spot"></div>
+        <div class="card-icon">💼</div>
+        <h3>Consultoria</h3>
+        <p>Orientação especializada para implementar IA no seu negócio de forma estratégica e eficiente.</p>
+      </div>
+      <div class="card interactive-card">
+        <div class="card-spot"></div>
+        <div class="card-icon">📚</div>
+        <h3>Materiais Grátis</h3>
+        <p>Conteúdo educativo e recursos gratuitos para você começar sua jornada na IA hoje mesmo.</p>
+      </div>
+      <div class="card interactive-card">
+        <div class="card-spot"></div>
+        <div class="card-icon">⚡</div>
+        <h3>Projetos Reais</h3>
+        <p>Casos de uso reais e implementações práticas que geram resultados mensuráveis.</p>
+      </div>
+      <div class="card interactive-card">
+        <div class="card-spot"></div>
+        <div class="card-icon">🎯</div>
+        <h3>Foco em PME</h3>
+        <p>Soluções pensadas especificamente para pequenas e médias empresas brasileiras.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Manifesto Section -->
+  <section class="manifesto">
+    <div class="band">
+      <div class="manieye">Manifesto CASDEV</div>
+      <div class="maniline">
+        Acreditamos que a Inteligência Artificial deve ser acessível, prática e gerar resultados reais. 
+        Sem promessas vazias, sem tecnicismos desnecessários. Apenas soluções que funcionam e transformam negócios.
+      </div>
+      <div class="maniline" style="margin-top: 30px; border-color: var(--violet);">
+        Nosso compromisso é democratizar o acesso à IA, tornando-a uma ferramenta poderosa nas mãos de empreendedores que desejam inovar e crescer.
+      </div>
+    </div>
+  </section>
+
+  <!-- Voice Orb -->
+  <div class="voice-orb" id="voice-orb" title="Clique para falar comigo">🎤</div>
+
+  <!-- Chat Interface -->
+  <div class="chat-interface" id="chat-interface">
+    <div class="chat-header">
+      <h4>Assistente CASDEV AI</h4>
+      <button class="chat-close" id="chat-close">×</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="message bot">Olá! Sou o assistente virtual do CASDEV. Como posso ajudar você hoje? Pergunte sobre IA, automação ou nossos serviços! 🚀</div>
+    </div>
   </div>
-  <div class="card">
-    <h2>🎨 Landing Pages</h2>
-    <p>Páginas personalizadas por persona. Identidade Órbita. R$47 vitalício.</p>
-    <span class="tag">Marketing</span><span class="tag">Conversão</span>
-    <br><div class="links"><a href="./marina.html">Marina</a><a href="./rafael.html">Rafael</a><a href="./jessica.html">Jéssica</a></div>
-  </div>
-</div>
-<footer>Órbita · Seu ritmo. Sua órbita.</footer>
+
+  <script>
+    // Loading Screen
+    window.addEventListener('load', () => { setTimeout(() => { document.getElementById('loader').classList.add('hidden'); }, 1500); });
+
+    // Custom Cursor
+    const cursor = document.getElementById('cursor');
+    const cursorDot = document.getElementById('cursor-dot');
+    let mouseX = 0, mouseY = 0, cursorX = 0, cursorY = 0;
+    document.addEventListener('mousemove', (e) => { mouseX = e.clientX; mouseY = e.clientY; });
+    function animateCursor() {
+      cursorX += (mouseX - cursorX) * 0.1; cursorY += (mouseY - cursorY) * 0.1;
+      cursor.style.left = cursorX + 'px'; cursor.style.top = cursorY + 'px';
+      cursorDot.style.left = mouseX + 'px'; cursorDot.style.top = mouseY + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+    document.querySelectorAll('a, button, .interactive-card, .voice-orb').forEach(el => {
+      el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+      el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+    });
+
+    // Scroll Progress
+    const scrollProgress = document.getElementById('scroll-progress');
+    window.addEventListener('scroll', () => {
+      const progress = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      scrollProgress.style.width = progress + '%';
+    });
+
+    // Card Spotlight Effect
+    document.querySelectorAll('.interactive-card').forEach(card => {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+      });
+    });
+
+    // Particle System
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 50; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 10 + 's';
+      particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+      particlesContainer.appendChild(particle);
+    }
+
+    // Neural Network Canvas
+    const canvas = document.getElementById('neural-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, nodes = [];
+    const nodeCount = 80, connectionDistance = 150, mouseDistance = 200;
+    function resize() { width = canvas.width = window.innerWidth; height = canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    class Node {
+      constructor() {
+        this.x = Math.random() * width; this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.5; this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = Math.random() * 2 + 1;
+      }
+      update(mouseX, mouseY) {
+        this.x += this.vx; this.y += this.vy;
+        if (this.x < 0 || this.x > width) this.vx *= -1;
+        if (this.y < 0 || this.y > height) this.vy *= -1;
+        const dx = mouseX - this.x, dy = mouseY - this.y, dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < mouseDistance) { const force = (mouseDistance - dist) / mouseDistance; this.vx -= dx * force * 0.0005; this.vy -= dy * force * 0.0005; }
+      }
+      draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2); ctx.fillStyle = 'rgba(255, 200, 61, 0.6)'; ctx.fill(); }
+    }
+    for (let i = 0; i < nodeCount; i++) nodes.push(new Node());
+    let globalMouseX = width/2, globalMouseY = height/2;
+    document.addEventListener('mousemove', (e) => { globalMouseX = e.clientX; globalMouseY = e.clientY; });
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      nodes.forEach(node => { node.update(globalMouseX, globalMouseY); node.draw(); });
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i+1; j < nodes.length; j++) {
+          const dx = nodes[i].x - nodes[j].x, dy = nodes[i].y - nodes[j].y, dist = Math.sqrt(dx*dx + dy*dy);
+          if (dist < connectionDistance) {
+            const opacity = 1 - dist/connectionDistance;
+            ctx.beginPath(); ctx.moveTo(nodes[i].x, nodes[i].y); ctx.lineTo(nodes[j].x, nodes[j].y);
+            ctx.strokeStyle = `rgba(255, 200, 61, ${opacity*0.3})`; ctx.lineWidth = 1; ctx.stroke();
+          }
+        }
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Dynamic Title based on scroll
+    const titles = ["Transforme\no Impossível\nem Realidade", "IA Prática\npara Seu\nNegócio", "Automação\nque Gera\nResultados", "O Futuro\né Agora\ncom IA"];
+    const subtitles = [
+      "Notícias de IA, projetos reais, consultoria de automação e materiais grátis para sua PME.",
+      "Implemente soluções inteligentes sem complicação ou jargões técnicos.",
+      "Deixe a IA trabalhar por você enquanto foca no crescimento do seu negócio.",
+      "Soluções reais de inteligência artificial para empresas que querem inovar."
+    ];
+    let titleIndex = 0;
+    window.addEventListener('scroll', () => {
+      const scrollPercent = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+      const newIndex = Math.floor(scrollPercent * titles.length);
+      if (newIndex !== titleIndex && newIndex < titles.length) {
+        titleIndex = newIndex;
+        const titleEl = document.getElementById('dynamic-title'), subtitleEl = document.getElementById('dynamic-subtitle');
+        titleEl.style.opacity = '0'; subtitleEl.style.opacity = '0';
+        setTimeout(() => {
+          titleEl.textContent = titles[titleIndex]; subtitleEl.textContent = subtitles[titleIndex];
+          titleEl.style.opacity = '1'; subtitleEl.style.opacity = '1';
+        }, 300);
+      }
+    });
+
+    // Voice Recognition & Chat
+    const voiceOrb = document.getElementById('voice-orb'), chatInterface = document.getElementById('chat-interface'), chatMessages = document.getElementById('chat-messages'), chatClose = document.getElementById('chat-close');
+    let isListening = false, recognition = null;
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognition = new SpeechRecognition();
+      recognition.continuous = false; recognition.lang = 'pt-BR'; recognition.interimResults = false;
+      recognition.onstart = () => { isListening = true; voiceOrb.classList.add('listening'); voiceOrb.textContent = '👂'; };
+      recognition.onend = () => { isListening = false; voiceOrb.classList.remove('listening'); voiceOrb.textContent = '🎤'; };
+      recognition.onresult = (event) => { const transcript = event.results[0][0].transcript; addMessage(transcript, 'user'); processUserMessage(transcript); };
+    }
+    voiceOrb.addEventListener('click', () => {
+      chatInterface.classList.toggle('active');
+      if (recognition && !isListening) { try { recognition.start(); } catch(e) {} }
+    });
+    chatClose.addEventListener('click', () => { chatInterface.classList.remove('active'); if (recognition && isListening) recognition.stop(); });
+    function addMessage(text, type) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`; messageDiv.textContent = text;
+      chatMessages.appendChild(messageDiv); chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    function processUserMessage(message) {
+      const lowerMsg = message.toLowerCase(); let response = '';
+      if (lowerMsg.includes('olá') || lowerMsg.includes('oi')) response = 'Olá! Bem-vindo ao CASDEV! Como posso ajudar você com IA e automação hoje? 🚀';
+      else if (lowerMsg.includes('automação') || lowerMsg.includes('automatizar')) response = 'Oferecemos soluções de automação com IA que podem reduzir até 70% do tempo em tarefas repetitivas. Quer saber mais?';
+      else if (lowerMsg.includes('preço') || lowerMsg.includes('custo')) response = 'Temos opções para todos os tamanhos de empresa! Visite casdev.com.br para um orçamento.';
+      else if (lowerMsg.includes('notícia') || lowerMsg.includes('novidade')) response = 'Mantenha-se atualizado com as últimas notícias de IA no nosso blog!';
+      else if (lowerMsg.includes('consultoria')) response = 'Nossa consultoria é focada em resultados práticos para PMEs. Agende uma conversa!';
+      else if (lowerMsg.includes('grátis') || lowerMsg.includes('material')) response = 'Temos diversos materiais gratuitos disponíveis! Guias, tutoriais e cases de estudo.';
+      else if (lowerMsg.includes('pme') || lowerMsg.includes('pequena')) response = 'Somos especializados em PMEs! Soluções sob medida para seu negócio.';
+      else response = 'Interessante! Visite casdev.com.br para explorar mais conteúdos. Posso ajudar com algo mais específico?';
+      setTimeout(() => { addMessage(response, 'bot'); }, 500);
+    }
+
+    // Text Scramble Effect
+    document.querySelectorAll('h1, h3').forEach(element => {
+      element.addEventListener('mouseenter', function() {
+        const originalText = this.textContent;
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+        let iterations = 0;
+        const interval = setInterval(() => {
+          this.textContent = originalText.split('').map((char, index) => index < iterations ? originalText[index] : chars[Math.floor(Math.random()*chars.length)]).join('');
+          iterations += 1/2;
+          if (iterations >= originalText.length) { clearInterval(interval); this.textContent = originalText; }
+        }, 30);
+      });
+    });
+
+    console.log('%c CASDEV - IA Prática para Negócios ', 'background: linear-gradient(135deg, #FFC83D, #7C5CFF); color: white; padding: 20px; font-size: 20px; border-radius: 10px; font-weight: bold;');
+    console.log('%c Visite casdev.com.br ', 'color: #FFC83D; font-size: 14px;');
+  </script>
 </body>
 </html>
